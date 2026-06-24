@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+    <meta charset = "UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" href = "./assets/favicon.png">
+    <title>Basic chat</title>
+</head>
+<body>
+    <div id="join-screen">
+        <div id="join-box">
+            <h1><span class="uno">UNO</span><span class="online">nline</span></h1>
+            <input type="text" id="nickname-input" placeholder="Enter your nickname...">
+            <input type="text" id="lobby-input" placeholder="Enter lobby code...">
+            <div id="helper-text">Enter a lobby ID to join a friend, <br>or leave it blank to create a new lobby.</div>
+            <button id="join-button">Join</button>
+        </div>
+    </div>
+    <div id = "game-container">
+        <div id = "top-player">
+        </div>
+        <div id = "table-area">
+            <div id="waiting-box"></div>
+        </div>
+        <div id="message-container">
+            <div id="message-body">
+            </div>
+
+            <div id="input-container">
+                <input type="text" id="message-input" placeholder="Send new message...">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+        <div id="bottom-player">
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

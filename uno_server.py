@@ -163,7 +163,8 @@ async def handler(websocket):
                         "players": [player.nickname for player in unoplayerlist],
                         "cards": [player_lobby.game.display_cards(player.cards) for player in unoplayerlist],
                         "discard": player_lobby.game.display_card(player_lobby.game.discardpile[-1]),
-                        "curplayer": player_lobby.game.curplayer.nickname
+                        "curplayer": player_lobby.game.curplayer.nickname,
+                        "color": player_lobby.game.color
                     }), raw = True)
                 
                 case "chat":
@@ -191,7 +192,8 @@ async def handler(websocket):
                                 "players": [player.nickname for player in unoplayerlist],
                                 "cards": [player_lobby.game.display_cards(player.cards) for player in unoplayerlist],
                                 "discard": player_lobby.game.display_card(player_lobby.game.discardpile[-1]),
-                                "curplayer": player_lobby.game.curplayer.nickname
+                                "curplayer": player_lobby.game.curplayer.nickname,
+                                "color": player_lobby.game.color
                             }), raw = True)
                 
                 case "draw_card":
@@ -203,7 +205,8 @@ async def handler(websocket):
                         "players": [player.nickname for player in unoplayerlist],
                         "cards": [player_lobby.game.display_cards(player.cards) for player in unoplayerlist],
                         "discard": player_lobby.game.display_card(player_lobby.game.discardpile[-1]),
-                        "curplayer": player_lobby.game.curplayer.nickname
+                        "curplayer": player_lobby.game.curplayer.nickname,
+                        "color": player_lobby.game.color
                     }), raw = True)
 
             print("Received:", message)

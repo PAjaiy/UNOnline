@@ -22,13 +22,30 @@ function positionPlayers() {
     const centerX = table.clientWidth / 2;
     const centerY = table.clientHeight / 2;
 
-    const radius = Math.min(centerX, centerY) * 0.75;
+    let radius;
+
+    if(centerX < centerY){radius = (centerY/2)*(centerX/centerY)**0.2;}
+    else{radius = centerY/2;}
+
+    const largerRadius = radius * 1.25;
 
     players.forEach((player, i) => {
         const angle = Math.PI/2 + i*(2*Math.PI/players.length);
 
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
+        let x, y;
+                        
+        if (players.length == 2){
+            x = centerX + radius * Math.cos(angle);
+            y = centerY + radius * Math.sin(angle);
+        }
+        else if (players.length == 3){
+            x = centerX + (i == 0 ? radius: largerRadius) * Math.cos(angle);
+            y = centerY + (i == 0 ? radius: largerRadius) * Math.sin(angle);
+        }
+        else if(players.length == 4){
+            x = centerX + largerRadius * Math.cos(angle);
+            y = centerY + largerRadius * Math.sin(angle);
+        }
 
         player.style.left = x + "px";
         player.style.top = y + "px";
@@ -253,6 +270,25 @@ joinButton.addEventListener("click", () => {
                 {
                     table.innerHTML = "";
 
+                    console.log("Current color: " + data.color);
+                    switch(data.color){
+                        case "Red":
+                            table.style.background = "rgb(27, 17, 17)";
+                            break;
+
+                        case "Green":
+                            table.style.background = "rgb(17, 27, 17)";
+                            break;
+                
+                        case "Blue":
+                            table.style.background = "rgb(17, 17, 27)";
+                            break;
+
+                        case "Yellow":
+                            table.style.background = "rgb(34, 34, 18)";
+                            break;
+                    }
+
                     const allPlayers = data["players"];
                     const disCard = data["discard"];
                     const curPlayer = data["curplayer"];
@@ -298,23 +334,49 @@ joinButton.addEventListener("click", () => {
 
                     table.appendChild(piles);
 
-                    const radius = Math.min(centerX, centerY) * 0.75;
+                    let radius;
+
+                    if(centerX < centerY){radius = (centerY/2)*(centerX/centerY)**0.2;}
+                    else{radius = centerY/2;}
+
+                    const largerRadius = radius * 1.25;
 
                     for (let i = 0; i < numPlayers; i++){
                         const angle = Math.PI/2 + i * (2 * Math.PI / numPlayers);
                         
-                        const x = centerX + radius * Math.cos(angle);
-                        const y = centerY + radius * Math.sin(angle);
+                        let x, y;
+
+                        if (numPlayers == 2){
+                            x = centerX + radius * Math.cos(angle);
+                            y = centerY + radius * Math.sin(angle);
+                        }
+                        else if (numPlayers == 3){
+                            x = centerX + (i == 0 ? radius: largerRadius) * Math.cos(angle);
+                            y = centerY + (i == 0 ? radius: largerRadius) * Math.sin(angle);
+                        }
+                        else if(numPlayers == 4){
+                            x = centerX + largerRadius * Math.cos(angle);
+                            y = centerY + largerRadius * Math.sin(angle);
+                        }
 
                         const playerDiv = document.createElement("div");
                         playerDiv.classList.add("player")
 
                         playerDiv.innerHTML = "";
 
+                        const playerHand = document.createElement("div");
+                        playerHand.classList.add("player-hand");
+
                         let n = newAllCards[i].length;
 
                         if(i != 0)
                         {
+                            const playName = newAllPlayers[i];
+                            const nameSec = document.createElement("div");
+                            nameSec.textContent = playName;
+
+                            playerDiv.appendChild(nameSec);
+
                             for (let j = 0; j < n; j++){
                                 const back = document.createElement("img");
                                 back.classList.add("card");
@@ -326,9 +388,11 @@ joinButton.addEventListener("click", () => {
                                 back.style.left = `${i * 20}px`;
 
                                 backholder.appendChild(back)
-                                playerDiv.appendChild(backholder);
+                                playerHand.appendChild(backholder);
                             }
                         }
+                        
+                        playerDiv.appendChild(playerHand);
 
                         playerDiv.style.left = x + "px";
                         playerDiv.style.top = y + "px";
@@ -337,6 +401,14 @@ joinButton.addEventListener("click", () => {
                         playerDiv.style.transform = `translate(-50%, -50%) rotate(${rotAngle}deg)`;
                         console.log(rotAngle);
                         table.appendChild(playerDiv);
+                    }
+
+                    for(let k = 0; k < newAllCards.length; k++){
+                        if(curPlayer == newAllPlayers[k]){
+                            const curDiv = document.querySelectorAll(".player")[k];
+                            curDiv.style.borderColor = data.color.toLowerCase();
+                            break;
+                        }
                     }
 
                     const bottom = document.querySelectorAll(".player")[0];
@@ -428,6 +500,7 @@ joinButton.addEventListener("click", () => {
                 if(data.players.includes(nickname))
                 {
                     gamePlaying = false;
+                    table.style.background = "rgba(17, 17, 17, 0.9)";
                     showGameOver(data.winner);
                     break;
                 }

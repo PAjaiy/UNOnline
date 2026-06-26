@@ -30,8 +30,6 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
-
-    border: 2px solid blue;
 }
 
 #table-area {
@@ -43,6 +41,8 @@ body{
 
     width: 100%;
     height: 100%;
+
+    transition: background 0.2s ease;
 }
 
 #my-player {
@@ -56,9 +56,17 @@ body{
     position: absolute;
     transform: translate(-50%, -50%);
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
-    border: 2px solid blue;
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 20px;
+}
+
+.player-hand {
+    display: flex;
+    border: 2px solid red;
+    margin: 10px;
 }
 
 .piles {
@@ -67,7 +75,6 @@ body{
     display: flex;
     flex-direction: row;
     align-items: center;
-    border: 2px solid blue;
 }
 
 .card-button:first-child {

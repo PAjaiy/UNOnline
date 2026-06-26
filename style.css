@@ -11,14 +11,14 @@ body{
     display: grid;
 
     grid-template-columns: 8fr 3fr;
-    grid-template-rows: 50px 1fr 100px;
+    grid-template-rows: 50px 1fr 150px;
 
     pointer-events: none;
 
     grid-template-areas:
         "top chat"
         "table chat"
-        "bottom chat";
+        "table chat";
 }
 
 #game-container.active {
@@ -45,48 +45,108 @@ body{
     height: 100%;
 }
 
+#my-player {
+    display: flex;
+    width: fit-content;
+    height: fit-content;
+    flex-direction: row;
+}
+
 .player {
     position: absolute;
-    width: 140px;
-    height: 70px;
     transform: translate(-50%, -50%);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     border: 2px solid blue;
 }
 
 .piles {
     position: absolute;
-    width: 140px;
-    height: 70px;
     transform: translate(-50%, -50%);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     border: 2px solid blue;
 }
 
+.card-button:first-child {
+    margin-left: 0;
+}
+
+.card-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: -30px;
+
+    cursor: pointer;
+
+    transition: transform 0.15s ease;
+}
+
+.card-button:not(:disabled):hover {
+    transform: translateY(-20px);
+}
+
+.card-holder {
+    display: flex;
+    margin-left: -70px;
+}
+
+.card-holder:first-child {
+    margin-left: 0;
+}
+
+.card-button img {
+    width: 90px;
+    height: auto;
+
+    opacity: 1;
+    display: block;
+}
+
+.card-button:disabled img {
+    cursor: default;
+    filter: grayscale(60%);
+}
+
+.card {
+    width: 90px;
+    height: auto;
+
+    display: block;
+    padding: 0;
+    margin: 0;
+    margin-left: 0;
+}
+
 .draw-pile,
 .discard-pile {
-    width: 70px;
-    height: 70px;
-
-    border-radius: 5px;
-    border: 2px solid white;
-
-    background: rgba(50, 50, 50, 0.5);
-    color: white;
-
+    background: none;
+    border: none;
+    margin: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
+}
 
-    font-size: 18px;
+.draw-pile img {
+    width: 90px;
+    height: auto;
+}
+
+.discard-pile img {
+    width: 90px;
+    height: auto;
 }
 
 .draw-pile {
     cursor: pointer;
+}
+
+.draw-pile:disabled {
+    cursor: default;
 }
 
 .color-picker {
@@ -216,10 +276,6 @@ body{
     font-weight: 400;
     margin: 0;
     letter-spacing: 2px;
-}
-
-#bottom-player {
-    border: 2px solid blue;
 }
 
 #join-box {

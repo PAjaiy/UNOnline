@@ -38,6 +38,24 @@ function positionPlayers() {
     pile.style.top = centerY + "px";
 }
 
+function getCardImage(card) {
+    if(card.includes("Wild Draw Four")){
+        return "assets/cards/WildDrawFour.png";
+    }
+    else if(card.includes("Wild")){
+        return "assets/cards/Wild.png";
+    }
+
+    const arr = card.split(",");
+
+    if(!isNaN(arr[1])){
+        return "assets/cards/" + arr[0] + arr[1] + ".png";
+    }
+    else{
+        return "assets/cards/" + arr[0] + arr[1].replaceAll(" ", "") + ".png";
+    }
+
+}
 joinButton.addEventListener("click", () => {
 
     function hideJoinScreen() {
@@ -70,8 +88,6 @@ joinButton.addEventListener("click", () => {
         `;
 
         table.appendChild(overlay);
-        const bottom = document.getElementById("bottom-player");
-        bottom.innerHTML = "";
 
         document.getElementById("play-again").onclick = () => {
             socket.send(JSON.stringify({
@@ -247,11 +263,19 @@ joinButton.addEventListener("click", () => {
 
                     const drawPile = document.createElement("button");
                     drawPile.classList.add("draw-pile");
-                    drawPile.textContent = "draw";
+                    
+                    const drawImage = document.createElement("img");
+                    drawImage.src = "assets/cards/stack.png";
 
-                    const discardPile = document.createElement("button");
+                    drawPile.appendChild(drawImage);
+
+                    const discardPile = document.createElement("div");
                     discardPile.classList.add("discard-pile");
-                    discardPile.textContent = disCard;
+
+                    const disImage = document.createElement("img");
+                    disImage.src = getCardImage(disCard);
+                    
+                    discardPile.appendChild(disImage);
 
                     piles.appendChild(drawPile);
                     piles.appendChild(discardPile);       
@@ -285,23 +309,39 @@ joinButton.addEventListener("click", () => {
                         const playerDiv = document.createElement("div");
                         playerDiv.classList.add("player")
 
-                        const name = document.createElement("div");
-                        name.textContent = newAllPlayers[i];
+                        playerDiv.innerHTML = "";
 
-                        const cards = document.createElement("div");
-                        cards.textContent = newAllCards[i].length + " cards";
+                        let n = newAllCards[i].length;
 
-                        playerDiv.appendChild(name);
-                        playerDiv.appendChild(cards);
+                        if(i != 0)
+                        {
+                            for (let j = 0; j < n; j++){
+                                const back = document.createElement("img");
+                                back.classList.add("card");
+
+                                const backholder = document.createElement("div");
+                                backholder.classList.add("card-holder");
+
+                                back.src = "assets/cards/backface.png";
+                                back.style.left = `${i * 20}px`;
+
+                                backholder.appendChild(back)
+                                playerDiv.appendChild(backholder);
+                            }
+                        }
 
                         playerDiv.style.left = x + "px";
                         playerDiv.style.top = y + "px";
 
+                        const rotAngle = angle * 180/Math.PI - 90;
+                        playerDiv.style.transform = `translate(-50%, -50%) rotate(${rotAngle}deg)`;
+                        console.log(rotAngle);
                         table.appendChild(playerDiv);
                     }
 
-                    const bottom = document.getElementById("bottom-player");
+                    const bottom = document.querySelectorAll(".player")[0];
                     bottom.innerHTML = "";
+                    bottom.id = "my-player";
 
                     function showColorPicker(button, cardIndex) {
                         document.querySelector(".color-picker")?.remove();
@@ -348,7 +388,12 @@ joinButton.addEventListener("click", () => {
                         const button = document.createElement("button");
                         button.classList.add("card-button");
 
-                        button.textContent = card;
+                        const img = document.createElement("img");
+                        img.src = getCardImage(card);
+                        img.alt = card;
+
+                        button.appendChild(img);
+
                         button.disabled = !isCurPlayer;
 
                         console.log(isCurPlayer);

@@ -72,6 +72,12 @@ class Game:
         random.shuffle(self.drawpile)
 
     def draw_from_pile(self, player):
+
+        if self.drawpile == []:
+            self.drawpile = self.discardpile[:-1]
+            self.discardpile = [self.discardpile[-1]]
+            random.shuffle(self.drawpile)
+        
         card = self.drawpile.pop()
         player.add_card(card)
         return card
@@ -123,6 +129,11 @@ class Game:
             self.winner = self.curplayer
             return True
         
+        if self.drawpile == []:
+            self.drawpile = self.discardpile[:-1]
+            self.discardpile = [self.discardpile[-1]]
+            random.shuffle(self.drawpile)
+
         self.color = self.discardpile[-1].color if valid[:4] != "wild" else servercolor
 
         if valid[:3] == "num":
@@ -147,25 +158,3 @@ class Game:
         
         self.move_next()
         return True
-
-'''
-while True:
-    if game.drawpile == []:
-        game.drawpile = game.discardpile[:-1]
-        game.discardpile = [game.discardpile[-1]]
-        random.shuffle(game.drawpile)
-
-    ind = int(input("Choose card index: "))
-    if ind == -1:
-        drawn_card = game.draw_from_pile(game.curplayer)
-        res = game.play_card(drawn_card)
-        if res == False:
-            game.move_next()
-    else: 
-        res = game.play_card(game.curplayer.cards[ind])
-        if res == False:
-            print("Invalid input")
-        if game.gameended:
-            print(game.winner.nickname, "won!")
-            break
-'''

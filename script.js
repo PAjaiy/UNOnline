@@ -95,6 +95,7 @@ joinButton.addEventListener("click", () => {
     }
 
     function showGameOver(winner) {
+        table.innerHTML = "";
         const overlay = document.createElement("div");
         overlay.classList.add("game-over");
 

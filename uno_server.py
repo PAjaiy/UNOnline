@@ -27,6 +27,7 @@ def generate_lobby():
     
 async def handler(websocket):
     player_lobby = None
+    playerinf = None
 
     async def broadcast(message, raw = False):
         disconnected = []
@@ -60,7 +61,8 @@ async def handler(websocket):
                             "reason": "Game is ongoing; this webpage will be shortly refreshed."
                         }))
                         print("Connection failed.")
-                        return None
+                        break
+                    player_lobby.players.append(playerinf)
                     player_lobby.activeplayers.append(playerinf)
                     player_lobby.host = player_lobby.activeplayers[0]
                     await broadcast(json.dumps({
@@ -94,6 +96,13 @@ async def handler(websocket):
                             }))         
                             print("Connection fault.")
                             return None
+                        elif data["nickname"] in [player.nickname for player in lobbies[lobby][0].players]:
+                            await websocket.send(json.dumps({
+                                "type": "join_failed",
+                                "reason": "Nickname already used in lobby; choose a different one."
+                            }))         
+                            print("Connection fault.")
+                            return None
                         else:
                             nick = data["nickname"]
                             old_lobby = lobbies[lobby][0]
@@ -106,6 +115,9 @@ async def handler(websocket):
                                 "lobby": old_lobby.id,
                             }))
 
+                            if old_lobby.host.nickname != old_lobby.players[0].nickname:
+                                old_lobby.host.nickname = old_lobby.players[0].nickname
+                            
                             await broadcast(json.dumps({
                                 "type": "waiting_update",
                                 "lobby": old_lobby.id,
@@ -114,7 +126,7 @@ async def handler(websocket):
                             }), raw = True)
                             print(f"New client connected with nickname {nick} at address {addr}.")
                             print(f"Lobby ID: {playerinf.lobby.id}")
-                            await broadcast(f"{nick} has joined the chat.")
+                            await broadcast(f"{nick} has joined the lobby.")
                     else:
                         nick = data["nickname"]
                         new_lobby = Lobby()
@@ -129,6 +141,9 @@ async def handler(websocket):
                             "lobby": new_lobby.id,
                         }))
 
+                        if new_lobby.host.nickname != new_lobby.players[0].nickname:
+                            new_lobby.host.nickname = new_lobby.players[0].nickname
+                        
                         await broadcast(json.dumps({
                             "type": "waiting_update",
                             "lobby": new_lobby.id,
@@ -137,13 +152,10 @@ async def handler(websocket):
                         }), raw = True)
                         print(f"New client connected with nickname {nick} at address {addr}.")
                         print(f"Lobby ID: {playerinf.lobby.id}")
-                        await broadcast(f"{nick} has joined the chat.")
+                        await broadcast(f"{nick} has joined the lobby.")
                 
                 case "start_game":
-                    print("ALL LOBBIES:")
-                    for lobby in lobbies:
-                        print(f"Lobby name: {lobby}")
-                        print(f"Members: {[player.nickname for player in lobbies[lobby][0].players]}")
+                    player_lobby.host = None
 
                     await broadcast(json.dumps({
                         "type": "start_game",
@@ -152,8 +164,10 @@ async def handler(websocket):
 
                     unoplayerlist = lobbies[player_lobby.id][1]
                     for player in player_lobby.activeplayers:
-                        unoplayerlist.append(uno.Player(player.nickname))
+                        playr = uno.Player(player.nickname)
+                        unoplayerlist.append(playr)
 
+                    player_lobby.players = player_lobby.activeplayers
                     player_lobby.activeplayers = []
 
                     player_lobby.game = uno.Game(unoplayerlist, zeroseven = False)
@@ -209,29 +223,59 @@ async def handler(websocket):
                         "color": player_lobby.game.color
                     }), raw = True)
 
-            print("Received:", message)
+            #print("Received:", message)
     
     except websockets.ConnectionClosed:
         print(f"{nick} disconnected.")
 
-    except Exception as e:
-        print("Error:", e)
-
     finally:
-        if playerinf in player_lobby.players: player_lobby.players.remove(playerinf)
         if len(player_lobby.players) == 0:
             lobbies.pop(player_lobby.id)
-        else:
-            '''if player_lobby.game:
-                player_lobby.host = player_lobby.activeplayers[0]
+            return None
+        
+        if player_lobby.game:
+            unoplayerlist = lobbies[player_lobby.id][1]
+            for plyr in unoplayerlist:
+                if plyr.nickname == nick:
+                    my_player = plyr
+                    break
+
+            if len(player_lobby.players) > 1:
+                print("ADDING DECK....")
+                player_lobby.game.move_next()
+                player_hand = my_player.cards
+                player_lobby.game.drawpile.extend(player_hand)
+                random.shuffle(player_lobby.game.drawpile)
+                player_lobby.game.players.remove(my_player)
                 await broadcast(json.dumps({
-                    "type": "waiting_update",
-                    "lobby": player_lobby.id,
-                    "players": [player.nickname for player in player_lobby.players],
-                    "host": player_lobby.host.nickname
-                }), raw = True)'''
-            await broadcast(f"{nick} disconnected.")
-        print(lobbies)
+                    "type": "game_update",
+                    "players": [player.nickname for player in unoplayerlist],
+                    "cards": [player_lobby.game.display_cards(player.cards) for player in unoplayerlist],
+                    "discard": player_lobby.game.display_card(player_lobby.game.discardpile[-1]),
+                    "curplayer": player_lobby.game.curplayer.nickname,
+                    "color": player_lobby.game.color
+                }), raw = True)
+            
+        print("Lobbies left: ", lobbies.keys())
+
+        if playerinf in player_lobby.players: 
+            player_lobby.players.remove(playerinf)
+            print("Current lobby players:", [player.nickname for player in player_lobby.players])
+
+        if playerinf in player_lobby.activeplayers: 
+            player_lobby.activeplayers.remove(playerinf)
+
+        if len(player_lobby.players) == 0:
+            lobbies.pop(player_lobby.id)
+            return None
+        
+        player_lobby.host = player_lobby.players[0]
+        await broadcast(json.dumps({
+            "type": "waiting_update",
+            "lobby": player_lobby.id,
+            "players": [player.nickname for player in player_lobby.players],
+            "host": player_lobby.host.nickname
+        }), raw = True)
 
 async def main():
     async with websockets.serve(handler, "localhost", 5555):

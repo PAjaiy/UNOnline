@@ -98,7 +98,7 @@ class Game:
         self.curind = (self.curind + self.direction) % len(self.players)
         self.curplayer = self.players[self.curind]
   
-    def play_card(self, card, servercolor = None):
+    def play_card(self, card, servercolor = None, serverplayer = None):
         player = self.players[self.curind]
 
         valid = False
@@ -143,7 +143,7 @@ class Game:
                 else: newlist = cardlist[1:] + [cardlist[0]]
                 for ind, player in enumerate(self.players): player.cards = newlist[ind]
             elif valid[-1] == "s":
-                swapper = self.curplayer.choose_player(self.players)
+                swapper = serverplayer
                 swapper.cards, self.curplayer.cards = self.curplayer.cards, swapper.cards
         elif valid == "spl":
             if card.special == "Skip": self.move_next()

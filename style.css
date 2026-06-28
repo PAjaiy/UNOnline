@@ -317,7 +317,7 @@ body{
     align-items: center;
 }
 
-/* piles css*/
+/* piles css */
 
 .piles {
     position: absolute;
@@ -370,7 +370,6 @@ body{
 
 .player-hand {
     display: flex;
-    border: 2px solid red;
     margin: 10px;
 }
 
@@ -438,13 +437,92 @@ body{
 .color-picker {
     position: fixed;
     
-    display: flex;
-    gap: 8px;
+    width: 120px;
+    height: 60px;
+
+    display: grid;
+    gap: 5px;
 
     padding: 8px;
-    background: rgba(40, 40, 40, 0.95);
+    background: rgba(10, 10, 10, 0.95);
 
     border-radius: 8px;
+
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+
+    grid-template-areas:
+        "gred gblue"
+        "ggreen gyellow";
+}
+
+.Red {
+    grid-area: gred;
+    background: red;
+}
+
+.Blue {
+    grid-area: gblue;
+    background: blue;
+}
+
+.Green {
+    grid-area: ggreen;
+    background: green;
+}
+
+.Yellow {
+    grid-area: gyellow;
+    background: yellow;
+}
+
+.picker-button {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 0px;
+    opacity: 0.7;
+}
+
+.picker-button:hover {
+    opacity: 1;
+}
+
+.picker-button:active {
+    opacity: 0.5;
+}
+
+/* player picker css */
+
+.player-picker {
+    position: fixed;
+    
+    width: 90px;
+    height: 120px;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 8px;
+    background: rgba(10, 10, 10, 0.95);
+
+    border-radius: 8px;
+
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+
+    grid-template-areas:
+        "gred gblue"
+        "ggreen gyellow";
+}
+
+.player-button {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 0px;
 }
 
 /* game-over css */

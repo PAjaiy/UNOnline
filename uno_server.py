@@ -204,7 +204,7 @@ async def handler(websocket):
 
                     my_lobby.users = my_lobby.activeusers.copy()
 
-                    my_lobby.game = uno.Game(unoplayerlist, zeroseven = False)
+                    my_lobby.game = uno.Game(unoplayerlist, zeroseven = True)
 
                     await activebroadcast(json.dumps({
                         "type": "game_update",
@@ -224,8 +224,8 @@ async def handler(websocket):
                 case "play_card":
                     ind = data["card_index"]
                     card = my_lobby.game.display_card(my_lobby.game.curplayer.cards[ind])
-                    res = my_lobby.game.play_card(my_lobby.game.curplayer.cards[ind], servercolor = data["color"] if "Wild" in card else None)
                     unoplayerlist = lobbies[my_lobby.id][1]
+                    res = my_lobby.game.play_card(my_lobby.game.curplayer.cards[ind], servercolor = data["color"] if "Wild" in card else None, serverplayer = unoplayerlist[[player.nickname for player in unoplayerlist].index(data["player"])] if "7" in card else None)
                     if res:
                         if my_lobby.game.gameended:
                             await setgameover()
@@ -252,7 +252,7 @@ async def handler(websocket):
                         "color": my_lobby.game.color
                     }), raw = True)
     finally:
-        print("is he in gameover?", ingameover[0])
+
         if ingameover[0]:
             if my_user in my_lobby.users: my_lobby.users.remove(my_user)
             return None
@@ -290,7 +290,7 @@ async def handler(websocket):
                 
             elif len(my_lobby.users) == 2:
                 my_lobby.game = None
-                unoplayerlist = []
+                lobbies[lobbyid][1] = []
 
                 my_lobby.users.remove(my_user)
                 my_lobby.activeusers.remove(my_user)
@@ -305,14 +305,13 @@ async def handler(websocket):
 
         else:
             my_lobby.users.remove(my_user)
-
+            if len(my_lobby.users) == 0:
+                lobbies.pop(lobbyid)
+                return None
+            
             try:
                 my_lobby.activeusers.remove(my_user)
             except:
-                return None
-
-            if len(my_lobby.users) == 0:
-                lobbies.pop(lobbyid)
                 return None
             
             my_lobby.host = my_lobby.activeusers[0]

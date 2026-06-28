@@ -17,7 +17,6 @@ let canStart = false;
 
 let joined = false;
 let gamePlaying = false;
-let waiting = false;
 let inGameOver = false;
 
 if (!socket){
@@ -452,20 +451,22 @@ socket.onmessage = (event) => {
 					picker.classList.add("color-picker");
 
 					const rect = button.getBoundingClientRect();
-					picker.style.left = rect.left + rect.width/2 - 80 + "px";
+					picker.style.left = rect.left + rect.width/2 - 60 + "px";
 					picker.style.top = rect.top - 70 + "px";
 
 					const colors = ["Red", "Yellow", "Green", "Blue"]
 
 					colors.forEach((name, i) => {
 						const b = document.createElement("button");
-						b.textContent = name;
+						b.classList.add(name);
+						b.classList.add("picker-button");
 						
 						b.addEventListener("click", () => {
 							socket.send(JSON.stringify({
 								type: "play_card",
 								card_index: cardIndex,
-								color: name
+								color: name,
+								player: "none"
 							}));
 
 							picker.remove();
@@ -474,6 +475,50 @@ socket.onmessage = (event) => {
 
 						picker.appendChild(b);
 					});
+
+					setTimeout(() => {
+						document.addEventListener("click", function close(e) {
+							if(!picker.contains(e.target)) {
+								picker.remove();
+								document.removeEventListener("click", close);
+							}
+						});
+					}, 0);
+					document.body.appendChild(picker);
+				}
+
+				function showPlayerPicker(button, cardIndex) {
+					document.querySelector(".player-picker")?.remove();
+
+					const picker = document.createElement("div");
+					picker.classList.add("player-picker");
+
+					const rect = button.getBoundingClientRect();
+					picker.style.left = rect.left + rect.width/2 - 45 + "px";
+					picker.style.top = rect.top - 130 + "px";
+
+					for(let name of newAllPlayers){
+						if(name == nickname){
+							continue;
+						}
+						const b = document.createElement("button");
+						b.classList.add("player-button");
+						b.textContent = name;
+						
+						b.addEventListener("click", () => {
+							socket.send(JSON.stringify({
+								type: "play_card",
+								card_index: cardIndex,
+								color: "none",
+								player: name
+							}));
+
+							picker.remove();
+							return;
+						});
+
+						picker.appendChild(b);
+					}
 
 					setTimeout(() => {
 						document.addEventListener("click", function close(e) {
@@ -503,11 +548,15 @@ socket.onmessage = (event) => {
 						if (card.includes("Wild")) {
 							showColorPicker(button, i);
 						}
+						else if (card.includes("7")) {
+							showPlayerPicker(button, i);
+						}
 						else {
 							socket.send(JSON.stringify({
 								type: "play_card",
 								card_index: i,
-								color: "none"
+								color: "none",
+								player: "none"
 							}));
 						}
 					})

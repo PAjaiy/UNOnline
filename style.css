@@ -6,6 +6,35 @@ body{
     height: 100vh;
 }
 
+/* join screen css */
+#join-screen {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(17, 17, 17, 0.9);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 0;
+
+    opacity: 1;
+    transition: opacity 0.25s ease;
+}
+
+#join-screen h1 {
+    font-size: 2.5rem;
+    font-weight: 400;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+#join-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* game container css */
 #game-container{
     height: 100vh;
     display: grid;
@@ -22,9 +51,16 @@ body{
 }
 
 #game-container.active {
+    opacity: 1;
     pointer-events: auto;
 }
 
+#game-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* top-player css */
 #top-player {
     grid-area: top;
     display: flex;
@@ -32,11 +68,12 @@ body{
     align-items: center;
 }
 
+/* table-area css */
 #table-area {
     grid-area: table;
     background: rgba(17, 17, 17, 0.9);
 
-    display: none;
+    display: flex;
     position: relative;
 
     width: 100%;
@@ -44,6 +81,58 @@ body{
 
     transition: background 0.2s ease;
 }
+
+/* waiting-box css */
+#waiting-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+    width: 420px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+
+    padding: 36px;
+    background: rgba(67, 67, 67, 0.1);
+    border-radius: 8px;
+
+    box-shadow: 0 6px 6px rgba(0, 0, 0, 0.4);
+
+    opacity: 1;
+    transition: opacity 0.25s ease;
+}
+
+#waiting-box.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#waiting-box.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* lobby-row css */
+
+.lobby-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+/* player-list css */
+
+#player-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 
 #my-player {
     display: flex;
@@ -168,30 +257,6 @@ body{
     border-radius: 8px;
 }
 
-#waiting-box {
-
-    position: absolute;
-    top: 50%;
-    left: 50%;
-
-    transform: translate(-50%, -50%);
-    width: 420px;
-
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-
-    padding: 36px;
-    background: rgba(67, 67, 67, 0.1);
-    border-radius: 8px;
-
-    box-shadow: 0 6px 6px rgba(0, 0, 0, 0.4);
-
-    opacity: 1;
-    transition: opacity 0.25s ease;
-}
-
 #player-list {
     display: flex;
     flex-direction: column;
@@ -261,28 +326,6 @@ body{
     outline: none;
     color: white;
     background-color: rgba(50, 50, 50, 0.1);
-}
-
-#join-screen {
-    position: fixed;
-    inset: 0;
-
-    background: rgba(17, 17, 17, 0.9);
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 0;
-
-    opacity: 1;
-    transition: opacity 0.25s ease;
-}
-
-#join-screen h1 {
-    font-size: 2.5rem;
-    font-weight: 400;
-    margin: 0;
-    letter-spacing: 2px;
 }
 
 #join-box {
@@ -355,23 +398,6 @@ body{
     letter-spacing: 1px;
     font-weight: 300;
     opacity: 0.9;
-}
-
-#join-screen.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-#waiting-box.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.lobby-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
 }
 
 .copy-button {

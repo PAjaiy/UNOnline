@@ -147,7 +147,10 @@ class Game:
                 swapper.cards, self.curplayer.cards = self.curplayer.cards, swapper.cards
         elif valid == "spl":
             if card.special == "Skip": self.move_next()
-            elif card.special == "Reverse": self.direction *= -1
+            elif card.special == "Reverse":
+                if len(self.players) == 2:
+                    self.move_next()
+                else: self.direction *= -1
             elif card.special == "Draw Two":
                 self.move_next()
                 self.draw_from_pile(self.curplayer)

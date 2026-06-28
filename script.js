@@ -1,7 +1,7 @@
-
 let socket;
 
 const joinButton = document.getElementById("join-button");
+const game = document.getElementById("game-container");
 
 const messageBody = document.getElementById("message-body");
 const messageInput = document.getElementById("message-input");
@@ -10,13 +10,51 @@ const sendButton = document.getElementById("send-button");
 let wait = document.getElementById("waiting-box");
 let table = document.getElementById("table-area");
 
-let isAdmin = false;
+let nickname, lobby;
+
 let startButton;
 let canStart = false;
 
+let joined = false;
 let gamePlaying = false;
+let waiting = false;
+let inGameOver = false;
+
+if (!socket){
+	socket = new WebSocket("ws://localhost:5555");
+}
+
+hideGameContainer();
+
+// functions
+function hideJoinScreen() {
+    const joinScreen = document.getElementById("join-screen");
+    joinScreen.classList.add("hidden");
+}
+
+function hideGameContainer() {
+    if(game.classList.contains("active")){game.classList.remove("active");}
+    game.classList.add("hidden");
+}
+
+function showGameContainer() {
+    if(game.classList.contains("hidden")){game.classList.remove("hidden");}
+    game.classList.add("active");
+}
+
+function hideWaitingBox() {
+    if(wait.classList.contains("active")){wait.classList.remove("active");}
+    wait.classList.add("hidden");
+}
+
+function showWaitingBox() {
+    if(wait.classList.contains("hidden")){wait.classList.remove("hidden");}
+    wait.classList.add("active");
+}
 
 function positionPlayers() {
+    if (!gamePlaying) {return;}
+
     const players = document.querySelectorAll(".player");
     const pile = document.querySelector(".piles");
     const centerX = table.clientWidth / 2;
@@ -71,442 +109,63 @@ function getCardImage(card) {
     else{
         return "assets/cards/" + arr[0] + arr[1].replaceAll(" ", "") + ".png";
     }
-
 }
-joinButton.addEventListener("click", () => {
 
-    function hideJoinScreen() {
-        const joinScreen = document.getElementById("join-screen");
-        const game = document.getElementById("game-container");
+function addChatMessage(content) {
+    const message = document.createElement("div");
+    message.classList.add("message");
+    message.textContent = content;
+    messageBody.appendChild(message);
+}
 
-        game.classList.add("active");
+function showGameOver(winner) {
+    inGameOver = true;
+    table.innerHTML = "";
 
-        joinScreen.classList.add("hidden");
-        setTimeout(() => {
-            joinScreen.style.display = "none";
-        }, 250);
+    const overlay = document.createElement("div");
+    overlay.classList.add("game-over");
+
+    overlay.innerHTML = `
+        <h2>${winner} wins!</h2>
+        <button id="play-again" class="play-again">Play Again</button>
+        <button id="leave-lobby" class="leave-lobby">Leave Lobby</button>
+    `;
+
+    table.appendChild(overlay);
+
+    document.getElementById("play-again").onclick = () => {
+        inGameOver = false;
+
+        socket.send(JSON.stringify({
+            type: "play-again"
+        }));
+        overlay.remove();
     }
-
-    function addChatMessage(content) {
-        const message = document.createElement("div");
-        message.classList.add("message");
-        message.textContent = content;
-        messageBody.appendChild(message);
-    }
-
-    function showGameOver(winner) {
-        table.innerHTML = "";
-        const overlay = document.createElement("div");
-        overlay.classList.add("game-over");
-
-        overlay.innerHTML = `
-            <h2>${winner} wins!</h2>
-            <button id="play-again" class="play-again">Play Again</button>
-            <button id="leave-lobby" class="leave-lobby">Leave Lobby</button>
-        `;
-
-        table.appendChild(overlay);
-
-        document.getElementById("play-again").onclick = () => {
-            socket.send(JSON.stringify({
-                type: "play-again"
-            }));
-            overlay.remove();
-
-            table.innerHTML = "";
-            table.appendChild(wait);
-            wait.classList.remove("hidden");
-            wait.style.display = "flex";
-            wait.innerHTML = "";
-
-        }
         
-        document.getElementById("leave-lobby").onclick = () => {
-            socket.close();
-            location.reload();
-        };
-    }
+    document.getElementById("leave-lobby").onclick = () => {
 
-    const nickname = document.getElementById("nickname-input").value.trim();
-    const lobby = document.getElementById("lobby-input").value.trim();
+        socket.send(JSON.stringify({
+            type: "leave-lobby"
+        }));
+		
+        socket.close();
+        location.reload();
+    };
+}
+
+// event listeners
+joinButton.addEventListener("click", () => {
+    nickname = document.getElementById("nickname-input").value.trim();
+    lobby = document.getElementById("lobby-input").value.trim();
 
     if (!nickname) {return;}
+    joinButton.disabled = true;
 
-    const data = {
+    socket.send(JSON.stringify({
         type: "join_lobby",
         nickname: nickname,
         lobby: lobby
-    };
-
-    joinButton.disabled = true;
-
-    if (!socket){
-        socket = new WebSocket("ws://localhost:5555");
-    }
-
-    socket.onopen = () => {
-        socket.send(JSON.stringify(data));
-    };
-
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log(data);
-        switch(data.type) {
-            case "join_success":
-                if(!lobby) {isAdmin = true;}
-
-                hideJoinScreen();
-                wait.style.display = "flex";
-                table.style.display = "flex";
-
-                const top = document.getElementById('top-player');
-                top.textContent = "Lobby code: " + data["lobby"];
-
-                break;
-            
-            case "join_failed":
-                socket.close(1000, "Join failed.");
-                socket = null;
-                joinButton.disabled = false;
-                console.log(data.reason);
-                alert(data.reason);
-
-                if(data.reason == "Game is ongoing; this webpage will be shortly refreshed."){
-                    console.log("Refreshing..")
-                    location.reload();
-                }
-                break;
-
-            case "chat":
-                addChatMessage(data.message);
-                break;
-
-            case "waiting_update":
-                if(wait.classList.contains("hidden")){wait.classList.remove("hidden");}
-                wait.innerHTML = "";
-
-                const lobbyRow = document.createElement("div");
-                lobbyRow.classList.add("lobby-row");
-
-                const waitLobby = document.createElement("span");
-                waitLobby.textContent = "Lobby code: " + data["lobby"];
-
-                const copyButton = document.createElement("button");
-                copyButton.textContent = "⧉";
-                copyButton.classList.add("copy-button");
-
-                copyButton.addEventListener("click", () => {
-                    navigator.clipboard.writeText(data["lobby"]);
-
-                    copyButton.textContent = "Copied!";
-                    setTimeout(() => {
-                        copyButton.textContent = "⧉";
-                    }, 1000);
-                });
-
-                lobbyRow.appendChild(waitLobby);
-                lobbyRow.appendChild(copyButton);
-
-                const playerDisplay = document.createElement("div");
-                playerDisplay.id = "player-list";
-
-                for (const player of data.players){
-                    const div = document.createElement("div");
-                    div.textContent = player;
-                    playerDisplay.appendChild(div);
-                }
-
-                const div1 = document.createElement("div");
-                div1.textContent = String(data.players.length) + "/4 players joined.";
-                if(data.players.length < 2) {div1.style.color = "red"; canStart = false;}
-                else {canStart = true;}
-                playerDisplay.appendChild(div1);
-
-                wait.appendChild(lobbyRow);
-                wait.appendChild(playerDisplay);
-
-                function hideWaitingBox() {
-                    wait.classList.add("hidden");
-                    setTimeout(() => {
-                        wait.style.display = "none";
-                    }, 250);
-                }
-
-                if(data.host == nickname){
-                    const div = document.createElement("div");
-                    div.textContent = "You are the host.";
-                    playerDisplay.appendChild(div);
-
-                    let startButton = document.createElement("button");
-                    startButton.id = "start-button";
-                    startButton.textContent = "Start Game";
-                    startButton.classList.add("start-button");
-
-                    wait.appendChild(startButton);
-
-                    if(!canStart){startButton.disabled = true;}
-                    else {startButton.disabled = false;}
-
-                    startButton.addEventListener("click", () => {
-                        if(canStart){
-                            socket.send(JSON.stringify({
-                                type: "start_game"
-                            }));
-                        }
-                    })
-                }
-                break;
-            
-            case "start_game":
-                if(data.players.includes(nickname))
-                {
-                    console.log(data);
-                    gamePlaying = true;
-                    hideWaitingBox();
-                    break;
-                }
-
-            case "game_update":
-                if(data.players.includes(nickname))
-                {
-                    table.innerHTML = "";
-
-                    console.log("Current color: " + data.color);
-                    switch(data.color){
-                        case "Red":
-                            table.style.background = "rgb(27, 17, 17)";
-                            break;
-
-                        case "Green":
-                            table.style.background = "rgb(17, 27, 17)";
-                            break;
-                
-                        case "Blue":
-                            table.style.background = "rgb(17, 17, 27)";
-                            break;
-
-                        case "Yellow":
-                            table.style.background = "rgb(34, 34, 18)";
-                            break;
-                    }
-
-                    const allPlayers = data["players"];
-                    const disCard = data["discard"];
-                    const curPlayer = data["curplayer"];
-                    const allCards = data["cards"];
-
-                    const piles = document.createElement("div");
-                    piles.classList.add("piles");
-
-                    const drawPile = document.createElement("button");
-                    drawPile.classList.add("draw-pile");
-                    
-                    const drawImage = document.createElement("img");
-                    drawImage.src = "assets/cards/stack.png";
-
-                    drawPile.appendChild(drawImage);
-
-                    const discardPile = document.createElement("div");
-                    discardPile.classList.add("discard-pile");
-
-                    const disImage = document.createElement("img");
-                    disImage.src = getCardImage(disCard);
-                    
-                    discardPile.appendChild(disImage);
-
-                    piles.appendChild(drawPile);
-                    piles.appendChild(discardPile);       
-
-                    let isCurPlayer = curPlayer == nickname;
-
-                    let index = allPlayers.indexOf(nickname);
-                    const cardList = allCards[index];
-
-                    let newAllPlayers = allPlayers.slice(index, allPlayers.length).concat(allPlayers.slice(0, index));
-                    let newAllCards = allCards.slice(index, allCards.length).concat(allCards.slice(0, index));
-
-                    let numPlayers = allPlayers.length;
-
-                    const centerX = table.clientWidth/2;
-                    const centerY = table.clientHeight/2;
-
-                    piles.style.left = centerX + "px";
-                    piles.style.top = centerY + "px";
-
-                    table.appendChild(piles);
-
-                    let radius;
-
-                    if(centerX < centerY){radius = (centerY/2)*(centerX/centerY)**0.2;}
-                    else{radius = centerY/2;}
-
-                    const largerRadius = radius * 1.25;
-
-                    for (let i = 0; i < numPlayers; i++){
-                        const angle = Math.PI/2 + i * (2 * Math.PI / numPlayers);
-                        
-                        let x, y;
-
-                        if (numPlayers == 2){
-                            x = centerX + radius * Math.cos(angle);
-                            y = centerY + radius * Math.sin(angle);
-                        }
-                        else if (numPlayers == 3){
-                            x = centerX + (i == 0 ? radius: largerRadius) * Math.cos(angle);
-                            y = centerY + (i == 0 ? radius: largerRadius) * Math.sin(angle);
-                        }
-                        else if(numPlayers == 4){
-                            x = centerX + largerRadius * Math.cos(angle);
-                            y = centerY + largerRadius * Math.sin(angle);
-                        }
-
-                        const playerDiv = document.createElement("div");
-                        playerDiv.classList.add("player")
-
-                        playerDiv.innerHTML = "";
-
-                        const playerHand = document.createElement("div");
-                        playerHand.classList.add("player-hand");
-
-                        let n = newAllCards[i].length;
-
-                        if(i != 0)
-                        {
-                            const playName = newAllPlayers[i];
-                            const nameSec = document.createElement("div");
-                            nameSec.textContent = playName;
-
-                            playerDiv.appendChild(nameSec);
-
-                            for (let j = 0; j < n; j++){
-                                const back = document.createElement("img");
-                                back.classList.add("card");
-
-                                const backholder = document.createElement("div");
-                                backholder.classList.add("card-holder");
-
-                                back.src = "assets/cards/backface.png";
-                                back.style.left = `${i * 20}px`;
-
-                                backholder.appendChild(back)
-                                playerHand.appendChild(backholder);
-                            }
-                        }
-                        
-                        playerDiv.appendChild(playerHand);
-
-                        playerDiv.style.left = x + "px";
-                        playerDiv.style.top = y + "px";
-
-                        const rotAngle = angle * 180/Math.PI - 90;
-                        playerDiv.style.transform = `translate(-50%, -50%) rotate(${rotAngle}deg)`;
-                        console.log(rotAngle);
-                        table.appendChild(playerDiv);
-                    }
-
-                    for(let k = 0; k < newAllCards.length; k++){
-                        if(curPlayer == newAllPlayers[k]){
-                            const curDiv = document.querySelectorAll(".player")[k];
-                            curDiv.style.borderColor = data.color.toLowerCase();
-                            break;
-                        }
-                    }
-
-                    const bottom = document.querySelectorAll(".player")[0];
-                    bottom.innerHTML = "";
-                    bottom.id = "my-player";
-
-                    function showColorPicker(button, cardIndex) {
-                        document.querySelector(".color-picker")?.remove();
-
-                        const picker = document.createElement("div");
-                        picker.classList.add("color-picker");
-
-                        const rect = button.getBoundingClientRect();
-                        picker.style.left = rect.left + rect.width/2 - 80 + "px";
-                        picker.style.top = rect.top - 70 + "px";
-
-                        const colors = ["Red", "Yellow", "Green", "Blue"]
-
-                        colors.forEach((name, i) => {
-                            const b = document.createElement("button");
-                            b.textContent = name;
-                            
-                            b.addEventListener("click", () => {
-                                socket.send(JSON.stringify({
-                                    type: "play_card",
-                                    card_index: cardIndex,
-                                    color: name
-                                }));
-
-                                picker.remove();
-                                return;
-                            });
-
-                            picker.appendChild(b);
-                        });
-
-                        setTimeout(() => {
-                            document.addEventListener("click", function close(e) {
-                                if(!picker.contains(e.target)) {
-                                    picker.remove();
-                                    document.removeEventListener("click", close);
-                                }
-                            });
-                        }, 0);
-                        document.body.appendChild(picker);
-                    }
-
-                    cardList.forEach((card, i) => {
-                        const button = document.createElement("button");
-                        button.classList.add("card-button");
-
-                        const img = document.createElement("img");
-                        img.src = getCardImage(card);
-                        img.alt = card;
-
-                        button.appendChild(img);
-
-                        button.disabled = !isCurPlayer;
-
-                        console.log(isCurPlayer);
-
-                        button.addEventListener("click", () => {
-
-                            if (card.includes("Wild")) {
-                                showColorPicker(button, i);
-                            }
-                            else {
-                                socket.send(JSON.stringify({
-                                    type: "play_card",
-                                    card_index: i,
-                                    color: "none"
-                                }));
-                            }
-                        })
-
-                        bottom.appendChild(button);
-                    });
-
-                    drawPile.disabled = !isCurPlayer;
-                    drawPile.addEventListener("click", () => {
-                        socket.send(JSON.stringify({
-                            type: "draw_card"
-                        }));
-                    });
-                }
-                break;
-            
-            case "game_over":
-                if(data.players.includes(nickname))
-                {
-                    gamePlaying = false;
-                    table.style.background = "rgba(17, 17, 17, 0.9)";
-                    showGameOver(data.winner);
-                    break;
-                }
-        }
-    };
+    }));
 });
 
 sendButton.addEventListener("click", () => {
@@ -525,5 +184,353 @@ messageInput.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("resize", () => {
-    if(gamePlaying){positionPlayers();}
+    positionPlayers();
 });
+
+// socket
+socket.onmessage = (event) => {
+	const data = JSON.parse(event.data);
+	switch(data.type) {
+		case "join_success":
+            joined = true;
+
+			hideJoinScreen();
+            showGameContainer();
+
+            const top = document.getElementById('top-player');
+			top.textContent = "Lobby code: " + data["lobby"];
+
+			break;
+		
+		case "join_failed":
+			socket.close(1000, "Join failed.");
+			socket = null;
+			joinButton.disabled = false;
+			alert(data.reason);
+			location.reload();
+			break;
+
+		case "chat":
+			addChatMessage(data.message);
+			break;
+
+		case "waiting_update":
+			gamePlaying = false;
+
+			table.innerHTML = "";
+			table.style.background = "rgba(17, 17, 17, 0.9)";
+			
+            table.appendChild(wait);
+			wait.innerHTML = "";
+            showWaitingBox();
+
+			const lobbyRow = document.createElement("div");
+			lobbyRow.classList.add("lobby-row");
+
+			const waitLobby = document.createElement("span");
+			waitLobby.textContent = "Lobby code: " + data["lobby"];
+
+			const copyButton = document.createElement("button");
+			copyButton.textContent = "⧉";
+			copyButton.classList.add("copy-button");
+
+			copyButton.addEventListener("click", () => {
+				navigator.clipboard.writeText(data["lobby"]);
+
+				copyButton.textContent = "Copied!";
+				setTimeout(() => {
+					copyButton.textContent = "⧉";
+				}, 1000);
+			});
+
+			lobbyRow.appendChild(waitLobby);
+			lobbyRow.appendChild(copyButton);
+
+			const playerDisplay = document.createElement("div");
+			playerDisplay.id = "player-list";
+
+			for (const player of data.users){
+				const div = document.createElement("div");
+				div.textContent = player;
+				playerDisplay.appendChild(div);
+			}
+
+			const div1 = document.createElement("div");
+			div1.textContent = String(data.users.length) + "/4 players joined.";
+			if(data.users.length < 2) {div1.style.color = "red"; canStart = false;}
+			else {canStart = true;}
+			playerDisplay.appendChild(div1);
+
+			wait.appendChild(lobbyRow);
+			wait.appendChild(playerDisplay);
+
+			if(data.host == nickname){
+				const div = document.createElement("div");
+				div.textContent = "You are the host.";
+				playerDisplay.appendChild(div);
+
+				let startButton = document.createElement("button");
+				startButton.id = "start-button";
+				startButton.textContent = "Start Game";
+				startButton.classList.add("start-button");
+
+				wait.appendChild(startButton);
+
+				if(!canStart){startButton.disabled = true;}
+				else {startButton.disabled = false;}
+
+				startButton.addEventListener("click", () => {
+					if(canStart){
+						socket.send(JSON.stringify({
+							type: "start_game"
+						}));
+					}
+				})
+			}
+			break;
+		
+		case "start_game":
+			if(data.players.includes(nickname))
+			{
+				gamePlaying = true;
+				hideWaitingBox();
+				break;
+			}
+
+		case "game_update":
+			if(data.players.includes(nickname))
+			{
+				table.innerHTML = "";
+
+				switch(data.color){
+					case "Red":
+						table.style.background = "rgb(27, 17, 17)";
+						break;
+
+					case "Green":
+						table.style.background = "rgb(17, 27, 17)";
+						break;
+			
+					case "Blue":
+						table.style.background = "rgb(17, 17, 27)";
+						break;
+
+					case "Yellow":
+						table.style.background = "rgb(34, 34, 18)";
+						break;
+				}
+
+				const allPlayers = data["players"];
+				const disCard = data["discard"];
+				const curPlayer = data["curplayer"];
+				const allCards = data["cards"];
+
+				const piles = document.createElement("div");
+				piles.classList.add("piles");
+
+				const drawPile = document.createElement("button");
+				drawPile.classList.add("draw-pile");
+				
+				const drawImage = document.createElement("img");
+				drawImage.src = "assets/cards/stack.png";
+
+				drawPile.appendChild(drawImage);
+
+				const discardPile = document.createElement("div");
+				discardPile.classList.add("discard-pile");
+
+				const disImage = document.createElement("img");
+				disImage.src = getCardImage(disCard);
+				
+				discardPile.appendChild(disImage);
+
+				piles.appendChild(drawPile);
+				piles.appendChild(discardPile);       
+
+				let isCurPlayer = curPlayer == nickname;
+
+				let index = allPlayers.indexOf(nickname);
+				const cardList = allCards[index];
+
+				let newAllPlayers = allPlayers.slice(index, allPlayers.length).concat(allPlayers.slice(0, index));
+				let newAllCards = allCards.slice(index, allCards.length).concat(allCards.slice(0, index));
+
+				let numPlayers = allPlayers.length;
+
+				const centerX = table.clientWidth/2;
+				const centerY = table.clientHeight/2;
+
+				piles.style.left = centerX + "px";
+				piles.style.top = centerY + "px";
+
+				table.appendChild(piles);
+
+				let radius;
+
+				if(centerX < centerY){radius = (centerY/2)*(centerX/centerY)**0.2;}
+				else{radius = centerY/2;}
+
+				const largerRadius = radius * 1.25;
+
+				for (let i = 0; i < numPlayers; i++){
+					const angle = Math.PI/2 + i * (2 * Math.PI / numPlayers);
+					
+					let x, y;
+
+					if (numPlayers == 2){
+						x = centerX + radius * Math.cos(angle);
+						y = centerY + radius * Math.sin(angle);
+					}
+					else if (numPlayers == 3){
+						x = centerX + (i == 0 ? radius: largerRadius) * Math.cos(angle);
+						y = centerY + (i == 0 ? radius: largerRadius) * Math.sin(angle);
+					}
+					else if(numPlayers == 4){
+						x = centerX + largerRadius * Math.cos(angle);
+						y = centerY + largerRadius * Math.sin(angle);
+					}
+
+					const playerDiv = document.createElement("div");
+					playerDiv.classList.add("player")
+
+					playerDiv.innerHTML = "";
+
+					const playerHand = document.createElement("div");
+					playerHand.classList.add("player-hand");
+
+					let n = newAllCards[i].length;
+
+					if(i != 0)
+					{
+						const playName = newAllPlayers[i];
+						const nameSec = document.createElement("div");
+						nameSec.textContent = playName;
+
+						playerDiv.appendChild(nameSec);
+
+						for (let j = 0; j < n; j++){
+							const back = document.createElement("img");
+							back.classList.add("card");
+
+							const backholder = document.createElement("div");
+							backholder.classList.add("card-holder");
+
+							back.src = "assets/cards/backface.png";
+							back.style.left = `${i * 20}px`;
+
+							backholder.appendChild(back)
+							playerHand.appendChild(backholder);
+						}
+					}
+					
+					playerDiv.appendChild(playerHand);
+
+					playerDiv.style.left = x + "px";
+					playerDiv.style.top = y + "px";
+
+					const rotAngle = angle * 180/Math.PI - 90;
+					playerDiv.style.transform = `translate(-50%, -50%) rotate(${rotAngle}deg)`;
+					table.appendChild(playerDiv);
+				}
+
+				for(let k = 0; k < newAllCards.length; k++){
+					if(curPlayer == newAllPlayers[k]){
+						const curDiv = document.querySelectorAll(".player")[k];
+						curDiv.style.borderColor = data.color.toLowerCase();
+						break;
+					}
+				}
+
+				const bottom = document.querySelectorAll(".player")[0];
+				bottom.innerHTML = "";
+				bottom.id = "my-player";
+
+				function showColorPicker(button, cardIndex) {
+					document.querySelector(".color-picker")?.remove();
+
+					const picker = document.createElement("div");
+					picker.classList.add("color-picker");
+
+					const rect = button.getBoundingClientRect();
+					picker.style.left = rect.left + rect.width/2 - 80 + "px";
+					picker.style.top = rect.top - 70 + "px";
+
+					const colors = ["Red", "Yellow", "Green", "Blue"]
+
+					colors.forEach((name, i) => {
+						const b = document.createElement("button");
+						b.textContent = name;
+						
+						b.addEventListener("click", () => {
+							socket.send(JSON.stringify({
+								type: "play_card",
+								card_index: cardIndex,
+								color: name
+							}));
+
+							picker.remove();
+							return;
+						});
+
+						picker.appendChild(b);
+					});
+
+					setTimeout(() => {
+						document.addEventListener("click", function close(e) {
+							if(!picker.contains(e.target)) {
+								picker.remove();
+								document.removeEventListener("click", close);
+							}
+						});
+					}, 0);
+					document.body.appendChild(picker);
+				}
+
+				cardList.forEach((card, i) => {
+					const button = document.createElement("button");
+					button.classList.add("card-button");
+
+					const img = document.createElement("img");
+					img.src = getCardImage(card);
+					img.alt = card;
+
+					button.appendChild(img);
+
+					button.disabled = !isCurPlayer;
+
+					button.addEventListener("click", () => {
+
+						if (card.includes("Wild")) {
+							showColorPicker(button, i);
+						}
+						else {
+							socket.send(JSON.stringify({
+								type: "play_card",
+								card_index: i,
+								color: "none"
+							}));
+						}
+					})
+
+					bottom.appendChild(button);
+				});
+
+				drawPile.disabled = !isCurPlayer;
+				drawPile.addEventListener("click", () => {
+					socket.send(JSON.stringify({
+						type: "draw_card"
+					}));
+				});
+			}
+			break;
+		
+		case "game_over":
+			if(data.players.includes(nickname))
+			{
+				gamePlaying = false;
+				table.style.background = "rgba(17, 17, 17, 0.9)";
+				showGameOver(data.winner);
+				break;
+			}
+	}
+};

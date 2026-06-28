@@ -157,7 +157,7 @@ joinButton.addEventListener("click", () => {
     nickname = document.getElementById("nickname-input").value.trim();
     lobby = document.getElementById("lobby-input").value.trim();
 
-    if (!nickname) {return;}
+    if (!nickname || nickname.length > 25) {return;}
     joinButton.disabled = true;
 
     socket.send(JSON.stringify({
@@ -265,8 +265,23 @@ socket.onmessage = (event) => {
 
 			if(data.host == nickname){
 				const div = document.createElement("div");
-				div.textContent = "You are the host.";
+				div.innerHTML = "<b>You are the host.</b>";
 				playerDisplay.appendChild(div);
+				
+				const label = document.createElement('label');
+				label.classList.add("checkbox-label");
+
+				const zeroseven = document.createElement('input');
+				zeroseven.type = 'checkbox';
+				zeroseven.id = 'zeroseven';
+
+				const text = document.createElement("span");
+				text.textContent = "Enable 7-0 rule";
+
+				label.appendChild(zeroseven);
+				label.appendChild(text);
+
+				wait.appendChild(label);
 
 				let startButton = document.createElement("button");
 				startButton.id = "start-button";
@@ -281,7 +296,8 @@ socket.onmessage = (event) => {
 				startButton.addEventListener("click", () => {
 					if(canStart){
 						socket.send(JSON.stringify({
-							type: "start_game"
+							type: "start_game",
+							zeroseven: zeroseven.checked
 						}));
 					}
 				})
@@ -494,8 +510,8 @@ socket.onmessage = (event) => {
 					picker.classList.add("player-picker");
 
 					const rect = button.getBoundingClientRect();
-					picker.style.left = rect.left + rect.width/2 - 45 + "px";
-					picker.style.top = rect.top - 130 + "px";
+					picker.style.left = rect.left + rect.width/2 - 65 + "px";
+					picker.style.top = rect.top - 10 - (10*newAllPlayers.length) + "px";
 
 					for(let name of newAllPlayers){
 						if(name == nickname){
@@ -548,7 +564,7 @@ socket.onmessage = (event) => {
 						if (card.includes("Wild")) {
 							showColorPicker(button, i);
 						}
-						else if (card.includes("7")) {
+						else if (card.includes("7") && data["zeroseven"] == true) {
 							showPlayerPicker(button, i);
 						}
 						else {

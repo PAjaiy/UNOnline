@@ -272,6 +272,19 @@ body{
     transition: background 0.2s ease;
 }
 
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input {
+    cursor: pointer;
+}
+
 .start-button {
     padding: 8px;
     border: none;
@@ -498,8 +511,8 @@ body{
 .player-picker {
     position: fixed;
     
-    width: 90px;
-    height: 120px;
+    width: 130px;
+    height: auto;
 
     display: flex;
     flex-direction: column;
@@ -520,9 +533,17 @@ body{
 .player-button {
     border: none;
     outline: none;
+    background: none;
+    color: white;
     cursor: pointer;
     border-radius: 5px;
     margin: 0px;
+
+    transition: color 0.2s ease;
+}
+
+.player-button:hover {
+    color: rgba(180, 180, 180, 0.9);
 }
 
 /* game-over css */

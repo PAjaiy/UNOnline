@@ -204,7 +204,8 @@ async def handler(websocket):
 
                     my_lobby.users = my_lobby.activeusers.copy()
 
-                    my_lobby.game = uno.Game(unoplayerlist, zeroseven = True)
+                    iszeroseven = data["zeroseven"]
+                    my_lobby.game = uno.Game(unoplayerlist, zeroseven = iszeroseven)
 
                     await activebroadcast(json.dumps({
                         "type": "game_update",
@@ -212,7 +213,8 @@ async def handler(websocket):
                         "cards": [my_lobby.game.display_cards(player.cards) for player in unoplayerlist],
                         "discard": my_lobby.game.display_card(my_lobby.game.discardpile[-1]),
                         "curplayer": my_lobby.game.curplayer.nickname,
-                        "color": my_lobby.game.color
+                        "color": my_lobby.game.color,
+                        "zeroseven": my_lobby.game.zeroseven
                     }), raw = True)
                     
                     print("Broadcasted game update")
@@ -225,7 +227,7 @@ async def handler(websocket):
                     ind = data["card_index"]
                     card = my_lobby.game.display_card(my_lobby.game.curplayer.cards[ind])
                     unoplayerlist = lobbies[my_lobby.id][1]
-                    res = my_lobby.game.play_card(my_lobby.game.curplayer.cards[ind], servercolor = data["color"] if "Wild" in card else None, serverplayer = unoplayerlist[[player.nickname for player in unoplayerlist].index(data["player"])] if "7" in card else None)
+                    res = my_lobby.game.play_card(my_lobby.game.curplayer.cards[ind], servercolor = data["color"] if "Wild" in card else None, serverplayer = unoplayerlist[[player.nickname for player in unoplayerlist].index(data["player"])] if my_lobby.game.zeroseven and "7" in card else None)
                     if res:
                         if my_lobby.game.gameended:
                             await setgameover()
@@ -236,7 +238,8 @@ async def handler(websocket):
                                 "cards": [my_lobby.game.display_cards(player.cards) for player in unoplayerlist],
                                 "discard": my_lobby.game.display_card(my_lobby.game.discardpile[-1]),
                                 "curplayer": my_lobby.game.curplayer.nickname,
-                                "color": my_lobby.game.color
+                                "color": my_lobby.game.color,
+                                "zeroseven": my_lobby.game.zeroseven
                             }), raw = True)
                 
                 case "draw_card":
@@ -249,7 +252,8 @@ async def handler(websocket):
                         "cards": [my_lobby.game.display_cards(player.cards) for player in unoplayerlist],
                         "discard": my_lobby.game.display_card(my_lobby.game.discardpile[-1]),
                         "curplayer": my_lobby.game.curplayer.nickname,
-                        "color": my_lobby.game.color
+                        "color": my_lobby.game.color,
+                        "zeroseven": my_lobby.game.zeroseven
                     }), raw = True)
     finally:
 
@@ -282,7 +286,8 @@ async def handler(websocket):
                     "cards": [my_lobby.game.display_cards(player.cards) for player in unoplayerlist],
                     "discard": my_lobby.game.display_card(my_lobby.game.discardpile[-1]),
                     "curplayer": my_lobby.game.curplayer.nickname,
-                    "color": my_lobby.game.color
+                    "color": my_lobby.game.color,
+                    "zeroseven": my_lobby.game.zeroseven
                 }), raw = True)
 
                 my_lobby.users.remove(my_user)

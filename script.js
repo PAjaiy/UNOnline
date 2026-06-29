@@ -245,14 +245,27 @@ socket.onmessage = (event) => {
 			lobbyRow.appendChild(waitLobby);
 			lobbyRow.appendChild(copyButton);
 
+			wait.appendChild(lobbyRow);
+
+			const descBoxes = document.createElement("div");
+			descBoxes.id = "two-boxes";
+
 			const playerDisplay = document.createElement("div");
 			playerDisplay.id = "player-list";
 
+			const playerhead = document.createElement("div");
+			playerhead.innerHTML = "<b>Players:</b>"
+
+			playerDisplay.appendChild(playerhead);
+
+			const playerSec = document.createElement("div");
+			playerSec.id = "player-show";
 			for (const player of data.users){
 				const div = document.createElement("div");
-				div.textContent = player;
-				playerDisplay.appendChild(div);
+				div.textContent = "• " + player;
+				playerSec.appendChild(div);
 			}
+			playerDisplay.appendChild(playerSec);
 
 			const div1 = document.createElement("div");
 			div1.textContent = String(data.users.length) + "/4 players joined.";
@@ -260,13 +273,18 @@ socket.onmessage = (event) => {
 			else {canStart = true;}
 			playerDisplay.appendChild(div1);
 
-			wait.appendChild(lobbyRow);
-			wait.appendChild(playerDisplay);
+			descBoxes.appendChild(playerDisplay);
 
-			if(data.host == nickname){
+			if(data.host == nickname){		
+				const hostDisplay = document.createElement("div");
+				hostDisplay.id = "host-display";
+
 				const div = document.createElement("div");
-				div.innerHTML = "<b>You are the host.</b>";
-				playerDisplay.appendChild(div);
+				div.innerHTML = "<b>Host controls:</b>";
+				hostDisplay.appendChild(div);
+
+				const hostSec = document.createElement("div");
+				hostSec.id = "host-show";
 				
 				const label = document.createElement('label');
 				label.classList.add("checkbox-label");
@@ -276,19 +294,36 @@ socket.onmessage = (event) => {
 				zeroseven.id = 'zeroseven';
 
 				const text = document.createElement("span");
-				text.textContent = "Enable 7-0 rule";
+				text.textContent = "Enable stacking";
 
 				label.appendChild(zeroseven);
 				label.appendChild(text);
 
-				wait.appendChild(label);
+				hostSec.appendChild(label);
+
+				const label2 = document.createElement('label');
+				label2.classList.add("checkbox-label");
+
+				const stack = document.createElement('input');
+				stack.type = 'checkbox';
+				stack.id = 'stack';
+
+				const text2 = document.createElement("span");
+				text2.textContent = "Enable 7-0 rule";
+
+				label2.appendChild(stack);
+				label2.appendChild(text2);
+
+				hostSec.appendChild(label2);
+
+				hostDisplay.appendChild(hostSec);
 
 				let startButton = document.createElement("button");
 				startButton.id = "start-button";
 				startButton.textContent = "Start Game";
 				startButton.classList.add("start-button");
 
-				wait.appendChild(startButton);
+				hostDisplay.appendChild(startButton);
 
 				if(!canStart){startButton.disabled = true;}
 				else {startButton.disabled = false;}
@@ -301,7 +336,11 @@ socket.onmessage = (event) => {
 						}));
 					}
 				})
+
+				descBoxes.appendChild(hostDisplay);
 			}
+			wait.appendChild(descBoxes);
+
 			break;
 		
 		case "start_game":

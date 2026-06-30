@@ -205,7 +205,9 @@ async def handler(websocket):
                     my_lobby.users = my_lobby.activeusers.copy()
 
                     iszeroseven = data["zeroseven"]
-                    my_lobby.game = uno.Game(unoplayerlist, zeroseven = iszeroseven)
+                    isstack = data["stack"]
+
+                    my_lobby.game = uno.Game(unoplayerlist, zeroseven = iszeroseven, stackable = isstack)
 
                     await activebroadcast(json.dumps({
                         "type": "game_update",
@@ -214,7 +216,8 @@ async def handler(websocket):
                         "discard": my_lobby.game.display_card(my_lobby.game.discardpile[-1]),
                         "curplayer": my_lobby.game.curplayer.nickname,
                         "color": my_lobby.game.color,
-                        "zeroseven": my_lobby.game.zeroseven
+                        "zeroseven": my_lobby.game.zeroseven,
+                        "stack": my_lobby.game.stackable
                     }), raw = True)
                     
                     print("Broadcasted game update")
@@ -239,12 +242,13 @@ async def handler(websocket):
                                 "discard": my_lobby.game.display_card(my_lobby.game.discardpile[-1]),
                                 "curplayer": my_lobby.game.curplayer.nickname,
                                 "color": my_lobby.game.color,
-                                "zeroseven": my_lobby.game.zeroseven
+                                "zeroseven": my_lobby.game.zeroseven,
+                                "stack": my_lobby.game.stackable
                             }), raw = True)
                 
                 case "draw_card":
-                    my_lobby.game.draw_from_pile(my_lobby.game.curplayer)
-                    my_lobby.game.move_next()
+                    my_lobby.game.play_card(None, validmove="draw")
+
                     unoplayerlist = lobbies[my_lobby.id][1]
                     await broadcast(json.dumps({
                         "type": "game_update",
@@ -253,7 +257,8 @@ async def handler(websocket):
                         "discard": my_lobby.game.display_card(my_lobby.game.discardpile[-1]),
                         "curplayer": my_lobby.game.curplayer.nickname,
                         "color": my_lobby.game.color,
-                        "zeroseven": my_lobby.game.zeroseven
+                        "zeroseven": my_lobby.game.zeroseven,
+                        "stack": my_lobby.game.stackable
                     }), raw = True)
     finally:
 
@@ -287,7 +292,8 @@ async def handler(websocket):
                     "discard": my_lobby.game.display_card(my_lobby.game.discardpile[-1]),
                     "curplayer": my_lobby.game.curplayer.nickname,
                     "color": my_lobby.game.color,
-                    "zeroseven": my_lobby.game.zeroseven
+                    "zeroseven": my_lobby.game.zeroseven,
+                    "stack": my_lobby.game.stackable
                 }), raw = True)
 
                 my_lobby.users.remove(my_user)

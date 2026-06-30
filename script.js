@@ -113,10 +113,11 @@ function showWaitingBox() {
 function positionPlayers() {
     if (!gamePlaying) {return;}
 
+	const gBoard = document.getElementById("game-board");
     const players = document.querySelectorAll(".player");
     const pile = document.querySelector(".piles");
-    const centerX = table.clientWidth / 2;
-    const centerY = table.clientHeight / 2;
+    const centerX = gBoard.clientWidth / 2;
+    const centerY = gBoard.clientHeight / 2;
 
     let radius;
 
@@ -414,7 +415,8 @@ socket.onmessage = (event) => {
 					if(canStart){
 						socket.send(JSON.stringify({
 							type: "start_game",
-							zeroseven: zeroseven.checked
+							zeroseven: zeroseven.checked,
+							stack: stack.checked
 						}));
 					}
 				})
@@ -437,6 +439,10 @@ socket.onmessage = (event) => {
 			{
 				stopBackgroundAnimation();
 				table.innerHTML = "";
+
+				const gameBoard = document.createElement("div");
+				gameBoard.id = "game-board";
+				table.appendChild(gameBoard);
 
 				const allPlayers = data["players"];
 				const disCard = data["discard"];
@@ -475,13 +481,13 @@ socket.onmessage = (event) => {
 
 				let numPlayers = allPlayers.length;
 
-				const centerX = table.clientWidth/2;
-				const centerY = table.clientHeight/2;
+				const centerX = gameBoard.clientWidth/2;
+				const centerY = gameBoard.clientHeight/2;
 
 				piles.style.left = centerX + "px";
 				piles.style.top = centerY + "px";
 
-				table.appendChild(piles);
+				gameBoard.appendChild(piles);
 
 				let radius;
 
@@ -548,7 +554,7 @@ socket.onmessage = (event) => {
 
 					const rotAngle = angle * 180/Math.PI - 90;
 					playerDiv.style.transform = `translate(-50%, -50%) rotate(${rotAngle}deg)`;
-					table.appendChild(playerDiv);
+					gameBoard.appendChild(playerDiv);
 				}
 
 				for(let k = 0; k < newAllCards.length; k++){

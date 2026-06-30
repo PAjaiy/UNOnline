@@ -175,6 +175,7 @@ body{
     font-weight: 300;
     opacity: 0.9;
 }
+
 /* game container css */
 #game-container{
     height: 100vh;
@@ -209,13 +210,51 @@ body{
     align-items: center;
 }
 
+/* background animation css */
+
+.row-box {
+    display: flex;
+}
+
+.three-holder {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.all-cards {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    border: solid 2px green;
+
+    position: absolute;
+    overflow: hidden;
+
+    gap: 7px;
+
+    width: 150%;
+    height: 150%;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%) rotate(20deg);
+    filter: grayscale(70%);
+    opacity: 0.067;
+
+    background: rgba(17, 17, 17, 0.9);
+}
 /* table-area css */
 #table-area {
     grid-area: table;
-    background: rgba(17, 17, 17, 0.9);
+    background:rgba(17, 17, 17, 0.9);
 
     display: flex;
     position: relative;
+    overflow: hidden;
 
     width: 100%;
     height: 100%;
@@ -238,7 +277,6 @@ body{
     gap: 10px;
 
     padding: 24px;
-    background: none;
 
     opacity: 1;
     transition: opacity 0.25s ease;
@@ -263,7 +301,7 @@ body{
     padding: 12px 0;
     gap: 12px;
 
-    background: rgba(67, 67, 67, 0.1);
+    background: rgb(37, 37, 37);
     box-shadow: 0px 6px 6px rgb(10, 10, 10);
 
     border-radius: 5px;
@@ -276,7 +314,7 @@ body{
 
     font-size: 9px;
     color: white;
-    background: rgba(100, 100, 100, 0.15);
+    background: rgb(60, 60, 60);
 
     cursor: pointer;
 
@@ -294,7 +332,7 @@ body{
 }
 
 #player-list {
-    flex: 1.6;
+    flex: 1.4;
 
     display: flex;
     flex-direction: column;
@@ -304,7 +342,7 @@ body{
     padding: 24px 16px;
     gap: 5px;
 
-    background: rgba(67, 67, 67, 0.1);
+    background: rgb(37, 37, 37);
     box-shadow: 0px 6px 6px rgb(10, 10, 10);
 
     border-radius: 5px;
@@ -322,10 +360,10 @@ body{
     align-items: center;
     justify-content: center;
 
-    padding: 24px 16px;
+    padding: 24px 12px;
     gap: 12px;
 
-    background: rgba(67, 67, 67, 0.1);
+    background: rgb(37, 37, 37);
     box-shadow: 0px 6px 6px rgb(10, 10, 10);
 
     border-radius: 5px;
@@ -349,31 +387,40 @@ body{
 }
 
 .start-button {
-    padding: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
     border: none;
-    border-radius: 5px;
-
     color: white;
-    background: rgba(100, 100, 100, 0.15);
-    cursor: pointer;
 
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px 0;
+    gap: 12px;
+
+    background: rgb(37, 37, 37);
+    cursor: pointer;
+    box-shadow: 0px 6px 6px rgb(10, 10, 10);
+
+    border-radius: 5px;
     transition: background 0.2s ease;
 }
 
 .start-button:hover{
-    background: rgba(150, 150, 150, 0.2);
+    background: rgb(47, 47, 47);
 }
 
 .start-button:active {
-    background: rgba(70, 70, 70, 0.2);
+    background: rgb(27, 27, 27);
 }
 
 .copy-button:hover {
-    background: rgba(150, 150, 150, 0.2);
+    background: rgb(70, 70, 70);
 }
 
 .copy-button:active {
-    background: rgba(70, 70, 70, 0.2);
+    background: rgb(40, 40, 40);
 }
 
 /* piles css */

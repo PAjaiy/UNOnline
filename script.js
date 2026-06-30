@@ -19,6 +19,13 @@ let joined = false;
 let gamePlaying = false;
 let inGameOver = false;
 
+let animationId = null;
+let running = false;
+let previous = 0;
+
+let backgroundOffset = 0;
+const backgroundSpeed = 15;
+
 if (!socket){
 	socket = new WebSocket("ws://localhost:5555");
 }
@@ -26,6 +33,56 @@ if (!socket){
 hideGameContainer();
 
 // functions
+
+function startBackgroundAnimation(){
+	if (running) return;
+
+	running = true;
+	previous = performance.now();
+	animationId = requestAnimationFrame(animate);
+}
+
+function stopBackgroundAnimation(){
+	running = false;
+
+	if (animationId != null) {
+		cancelAnimationFrame(animationId);
+		animationId = null;
+	}
+}
+
+function animate(now){
+	if (!running) return;
+
+	const dt = (now - previous) / 1000;
+	previous = now;
+
+	backgroundOffset = (backgroundOffset + backgroundSpeed * dt) % 1756;
+
+	const holders = document.querySelectorAll(".three-holder");
+
+	holders.forEach((holder, i) => {
+		const rows = holder.children;
+
+		const firstRow = rows[0];
+		const secondRow = rows[1];
+		const thirdRow = rows[2];
+
+		if (i % 2 == 0){
+			firstRow.style.transform = `translateY(-${backgroundOffset}px)`;
+			secondRow.style.transform = `translateY(-${backgroundOffset}px)`;
+			thirdRow.style.transform = `translateY(-${backgroundOffset}px)`;
+		}
+		else{
+			firstRow.style.transform = `translateY(${backgroundOffset}px)`;
+			secondRow.style.transform = `translateY(${backgroundOffset}px)`;
+			thirdRow.style.transform = `translateY(${backgroundOffset}px)`;
+		}
+	});
+
+	animationId = requestAnimationFrame(animate);
+}
+
 function hideJoinScreen() {
     const joinScreen = document.getElementById("join-screen");
     joinScreen.classList.add("hidden");
@@ -49,6 +106,8 @@ function hideWaitingBox() {
 function showWaitingBox() {
     if(wait.classList.contains("hidden")){wait.classList.remove("hidden");}
     wait.classList.add("active");
+
+	startBackgroundAnimation();
 }
 
 function positionPlayers() {
@@ -217,9 +276,31 @@ socket.onmessage = (event) => {
 			gamePlaying = false;
 
 			table.innerHTML = "";
-			table.style.background = "rgba(17, 17, 17, 0.9)";
-			
-            table.appendChild(wait);
+			table.style.backgroundColor = "rgba(17, 17, 17, 0.9)";
+
+			const allCardSets = document.createElement("div");
+			allCardSets.classList.add("all-cards");
+
+			for (let ind = 0; ind <= 16; ind++){
+				const tripleRow = document.createElement("div");
+				tripleRow.classList.add("three-holder");
+
+				for (let rep = 0; rep <= 2; rep++){
+					const row = document.createElement("div");
+					row.classList.add("row-box");
+
+					const rowImage = document.createElement("img");
+					rowImage.src = "assets/rows/row" + String(ind%13 + 1) + ".png";
+					row.appendChild(rowImage);
+
+					tripleRow.appendChild(row);
+				}
+				allCardSets.appendChild(tripleRow);
+			}
+
+			table.appendChild(allCardSets);
+
+			table.appendChild(wait);
 			wait.innerHTML = "";
             showWaitingBox();
 
@@ -268,11 +349,12 @@ socket.onmessage = (event) => {
 			playerDisplay.appendChild(playerSec);
 
 			const div1 = document.createElement("div");
-			div1.textContent = String(data.users.length) + "/4 players joined.";
+			div1.innerHTML = "<b>" + String(data.users.length) + "/4 players joined.</b>";
 			if(data.users.length < 2) {div1.style.color = "red"; canStart = false;}
 			else {canStart = true;}
 			playerDisplay.appendChild(div1);
 
+			wait.appendChild(descBoxes);
 			descBoxes.appendChild(playerDisplay);
 
 			if(data.host == nickname){		
@@ -294,7 +376,7 @@ socket.onmessage = (event) => {
 				zeroseven.id = 'zeroseven';
 
 				const text = document.createElement("span");
-				text.textContent = "Enable stacking";
+				text.textContent = "Enable 7-0 rule";
 
 				label.appendChild(zeroseven);
 				label.appendChild(text);
@@ -309,7 +391,7 @@ socket.onmessage = (event) => {
 				stack.id = 'stack';
 
 				const text2 = document.createElement("span");
-				text2.textContent = "Enable 7-0 rule";
+				text2.textContent = "Enable stacking";
 
 				label2.appendChild(stack);
 				label2.appendChild(text2);
@@ -320,10 +402,10 @@ socket.onmessage = (event) => {
 
 				let startButton = document.createElement("button");
 				startButton.id = "start-button";
-				startButton.textContent = "Start Game";
+				startButton.innerHTML = "<b>Start Game</b>";
 				startButton.classList.add("start-button");
 
-				hostDisplay.appendChild(startButton);
+				wait.appendChild(startButton);
 
 				if(!canStart){startButton.disabled = true;}
 				else {startButton.disabled = false;}
@@ -339,7 +421,6 @@ socket.onmessage = (event) => {
 
 				descBoxes.appendChild(hostDisplay);
 			}
-			wait.appendChild(descBoxes);
 
 			break;
 		
@@ -354,25 +435,8 @@ socket.onmessage = (event) => {
 		case "game_update":
 			if(data.players.includes(nickname))
 			{
+				stopBackgroundAnimation();
 				table.innerHTML = "";
-
-				switch(data.color){
-					case "Red":
-						table.style.background = "rgb(27, 17, 17)";
-						break;
-
-					case "Green":
-						table.style.background = "rgb(17, 27, 17)";
-						break;
-			
-					case "Blue":
-						table.style.background = "rgb(17, 17, 27)";
-						break;
-
-					case "Yellow":
-						table.style.background = "rgb(34, 34, 18)";
-						break;
-				}
 
 				const allPlayers = data["players"];
 				const disCard = data["discard"];

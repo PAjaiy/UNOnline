@@ -1,9 +1,18 @@
 body{
     margin: 0;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.45;
     background: #111111;
     color: white;
     height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+    font-weight: 400;
 }
 
 /* chat box css */
@@ -21,7 +30,7 @@ body{
     flex: 1;
     overflow-y: auto;
     padding: 16px;
-    line-height: 1.2;
+    line-height: 1.4;
 }
 
 #message-body div {
@@ -105,18 +114,28 @@ body{
 /* join box css */
 
 #join-box {
-    width: 420px;
+    width: 450px;
 
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
 
-    padding: 36px;
+    padding: 36px 12px;
     background: rgba(67, 67, 67, 0.1);
     border-radius: 8px;
 
     box-shadow: 0 10px 10px rgba(0, 0, 0, 0.4);
+}
+
+
+#inputs{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 12px;
 }
 
 #nickname-input {
@@ -124,9 +143,10 @@ body{
     border: none;
     outline: none;
     color: white;
+    text-align: center;
     border-radius: 5px;
     background: rgba(100, 100, 100, 0.1);
-    width: 70%;
+    width: 60%;
 }
 
 #lobby-input {
@@ -134,9 +154,10 @@ body{
     border: none;
     outline: none;
     color: white;
+    text-align: center;
     border-radius: 5px;
     background: rgba(100, 100, 100, 0.1);
-    width: 70%;
+    width: 60%;
 }
 
 #join-button {
@@ -163,16 +184,21 @@ body{
 #helper-text {
     text-align: center;
     line-height: 1.4;
+    margin: 12px;
 }
 
 .uno {
+    font-family: 'Poppins', sans-serif;
     letter-spacing: 0px;
+    font-size: 50px;
     font-weight: 450;
 }
 
 .online {
+    font-family: 'Poppins', sans-serif;
     letter-spacing: 1px;
     font-weight: 300;
+    font-size: 50px;
     opacity: 0.9;
 }
 
@@ -228,8 +254,6 @@ body{
     justify-content: center;
     align-items: center;
 
-    border: solid 2px green;
-
     position: absolute;
     overflow: hidden;
 
@@ -271,14 +295,13 @@ body{
     display: flex;
     position: absolute;
 
-    width: min(95%, 95vh);
-    height: min(95%, 95vh);
+    width: min(95%, 1200px);
+    height: min(95%, 850px);
 
     left: 50%;
     top: 50%;
 
     transform: translate(-50%, -50%);
-    border: solid 2px green;
 }
 
 /* waiting-box css */
@@ -288,7 +311,7 @@ body{
     left: 50%;
 
     transform: translate(-50%, -50%);
-    width: 420px;
+    width: 500px;
 
     display: flex;
     flex-direction: column;
@@ -319,6 +342,7 @@ body{
     width: 100%;
     padding: 12px 0;
     gap: 12px;
+    font-weight: 500;
 
     background: rgb(37, 37, 37);
     box-shadow: 0px 6px 6px rgb(10, 10, 10);
@@ -390,6 +414,7 @@ body{
 
 #host-show {
     gap: 0px;
+    font-weight: 400;
 }
 
 .checkbox-label {
@@ -448,15 +473,39 @@ body{
     position: absolute;
     transform: translate(-50%, -50%);
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+}
+
+.draw-dis {
+    display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin: 12px;
+}
+
+.more-info {
+    display: flex;
+    
+    width: 50%;
+    height: 30px;
+    filter: grayscale(20%);
+
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    border-radius: 5px;
 }
 
 .draw-pile,
 .discard-pile {
     background: none;
     border: none;
-    margin: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -484,7 +533,6 @@ body{
 
 .player {
     position: absolute;
-    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;

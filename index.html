@@ -3,6 +3,7 @@
 <head>
     <meta charset = "UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href = "./assets/favicon.png">
     <title>UNOnline</title>
@@ -11,8 +12,10 @@
     <div id="join-screen">
         <div id="join-box">
             <h1><span class="uno">UNO</span><span class="online">nline</span></h1>
-            <input type="text" id="nickname-input" placeholder="Enter your nickname...">
-            <input type="text" id="lobby-input" placeholder="Enter lobby code...">
+            <div id="inputs">
+                <input type="text" id="nickname-input" placeholder="Enter your nickname...">
+                <input type="text" id="lobby-input" placeholder="Enter lobby code...">
+            </div>
             <div id="helper-text">Enter a lobby ID to join a friend, <br>or leave it blank to create a new lobby.</div>
             <button id="join-button">Join</button>
         </div>

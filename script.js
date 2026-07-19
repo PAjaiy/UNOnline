@@ -116,40 +116,66 @@ function positionPlayers() {
 	const gBoard = document.getElementById("game-board");
     const players = document.querySelectorAll(".player");
     const pile = document.querySelector(".piles");
-    const centerX = gBoard.clientWidth / 2;
-    const centerY = gBoard.clientHeight / 2;
 
-    let radius;
+    const width = gBoard.clientWidth;
+    const height = gBoard.clientHeight;
 
-    if(centerX < centerY){radius = (centerY/2)*(centerX/centerY)**0.2;}
-    else{radius = centerY/2;}
+	const margin = 40;
 
-    const largerRadius = radius * 1.25;
+	if (players.length == 2){
+		players.forEach((player, i) => {
+			player.style.left = "50%";
 
-    players.forEach((player, i) => {
-        const angle = Math.PI/2 + i*(2*Math.PI/players.length);
+			if (i === 0){player.style.bottom = margin + "px";}
+			else{player.style.top = margin + "px";}
+		});
+	}
+	else if (players.length == 3){
+		const player1 = players[0];
+		const player2 = players[1];
+		const player3 = players[2];
 
-        let x, y;
-                        
-        if (players.length == 2){
-            x = centerX + radius * Math.cos(angle);
-            y = centerY + radius * Math.sin(angle);
-        }
-        else if (players.length == 3){
-            x = centerX + (i == 0 ? radius: largerRadius) * Math.cos(angle);
-            y = centerY + (i == 0 ? radius: largerRadius) * Math.sin(angle);
-        }
-        else if(players.length == 4){
-            x = centerX + largerRadius * Math.cos(angle);
-            y = centerY + largerRadius * Math.sin(angle);
-        }
+		player1.style.left = "50%";
+		player1.style.bottom = margin + "px";
 
-        player.style.left = x + "px";
-        player.style.top = y + "px";
-    });
+		const gap = 20;
 
-    pile.style.left = centerX + "px";
-    pile.style.top = centerY + "px";
+		const w1 = player2.offsetWidth;
+		const w2 = player3.offsetWidth;
+
+		const total = w1 + gap + w2;
+
+		player2.style.top = margin + "px";
+		player3.style.top = margin + "px";
+
+		player2.style.left = `calc(50% - ${total/2}px)`;
+		player3.style.left = `calc(50% + ${total/2-w2}px)`;
+	}
+	else if(players.length == 4){
+		const player1 = players[0];
+		const player2 = players[1];
+		const player3 = players[2];
+		const player4 = players[3];
+
+		player1.style.left = "50%";
+		player1.style.transform = `translateX(-50%)`;
+		player1.style.bottom = margin + "px";
+
+		player3.style.left = "50%";
+		player3.style.transform = `translateX(-50%)`;
+		player3.style.top = margin + "px";
+
+		player2.style.top = "50%";
+		player2.style.transform = "translateY(-50%)";
+		player2.style.left = margin + "px";
+
+		player4.style.top = "50%";
+		player4.style.transform = "translateY(-50%)";
+		player4.style.right = margin + "px";
+	}
+
+    pile.style.left = width/2 + "px";
+    pile.style.top = height/2 + "px";
 }
 
 function getCardImage(card) {
@@ -452,6 +478,9 @@ socket.onmessage = (event) => {
 				const piles = document.createElement("div");
 				piles.classList.add("piles");
 
+				const drawDiscard = document.createElement("div");
+				drawDiscard.classList.add("draw-dis");
+
 				const drawPile = document.createElement("button");
 				drawPile.classList.add("draw-pile");
 				
@@ -468,8 +497,27 @@ socket.onmessage = (event) => {
 				
 				discardPile.appendChild(disImage);
 
-				piles.appendChild(drawPile);
-				piles.appendChild(discardPile);       
+				drawDiscard.appendChild(drawPile);
+				drawDiscard.appendChild(discardPile);   
+
+				const moreInfo = document.createElement("div");
+				moreInfo.classList.add("more-info");
+				moreInfo.style.backgroundColor = data["color"].toLowerCase();
+
+				let row2 = null;
+
+				if (data["stack"]) {
+					row2 = document.createElement("div");
+					row2.innerHTML = "<b>+" + data["stack"] + " stacked!</b>";
+					piles.appendChild(row2);
+				}
+
+				piles.appendChild(moreInfo);
+				piles.append(drawDiscard);
+
+				if (row2){
+					piles.appendChild(row2);
+				}
 
 				let isCurPlayer = curPlayer == nickname;
 
@@ -481,39 +529,17 @@ socket.onmessage = (event) => {
 
 				let numPlayers = allPlayers.length;
 
-				const centerX = gameBoard.clientWidth/2;
-				const centerY = gameBoard.clientHeight/2;
+				const width = gameBoard.clientWidth;
+				const height = gameBoard.clientHeight;
 
-				piles.style.left = centerX + "px";
-				piles.style.top = centerY + "px";
+				piles.style.left = width/2 + "px";
+				piles.style.top = height/2 + "px";
 
 				gameBoard.appendChild(piles);
 
-				let radius;
-
-				if(centerX < centerY){radius = (centerY/2)*(centerX/centerY)**0.2;}
-				else{radius = centerY/2;}
-
-				const largerRadius = radius * 1.25;
+				const margin = 40;
 
 				for (let i = 0; i < numPlayers; i++){
-					const angle = Math.PI/2 + i * (2 * Math.PI / numPlayers);
-					
-					let x, y;
-
-					if (numPlayers == 2){
-						x = centerX + radius * Math.cos(angle);
-						y = centerY + radius * Math.sin(angle);
-					}
-					else if (numPlayers == 3){
-						x = centerX + (i == 0 ? radius: largerRadius) * Math.cos(angle);
-						y = centerY + (i == 0 ? radius: largerRadius) * Math.sin(angle);
-					}
-					else if(numPlayers == 4){
-						x = centerX + largerRadius * Math.cos(angle);
-						y = centerY + largerRadius * Math.sin(angle);
-					}
-
 					const playerDiv = document.createElement("div");
 					playerDiv.classList.add("player")
 
@@ -548,13 +574,63 @@ socket.onmessage = (event) => {
 					}
 					
 					playerDiv.appendChild(playerHand);
-
-					playerDiv.style.left = x + "px";
-					playerDiv.style.top = y + "px";
-
-					const rotAngle = angle * 180/Math.PI - 90;
-					playerDiv.style.transform = `translate(-50%, -50%) rotate(${rotAngle}deg)`;
 					gameBoard.appendChild(playerDiv);
+				}
+
+				const players = document.querySelectorAll(".player");
+
+				if (numPlayers == 2){
+					players.forEach((player, i) => {
+						player.style.left = "50%";
+						player.style.transform = `translateX(-50%)`;
+
+						if (i === 0){player.style.bottom = margin + "px";}
+						else{player.style.top = margin + "px";}
+					});
+				}
+				else if (numPlayers == 3){
+					const player1 = players[0];
+					const player2 = players[1];
+					const player3 = players[2];
+
+					player1.style.left = "50%";
+					player1.style.transform = `translateX(-50%)`;
+					player1.style.bottom = margin + "px";
+
+					const gap = 20;
+
+					const w1 = player2.offsetWidth;
+					const w2 = player3.offsetWidth;
+
+					const total = w1 + gap + w2;
+
+					player2.style.top = margin + "px";
+					player3.style.top = margin + "px";
+
+					player2.style.left = `calc(50% - ${total/2}px)`;
+					player3.style.left = `calc(50% + ${total/2-w2}px)`;
+				}
+				else if (numPlayers == 4){
+					const player1 = players[0];
+					const player2 = players[1];
+					const player3 = players[2];
+					const player4 = players[3];
+
+					player1.style.left = "50%";
+					player1.style.transform = `translateX(-50%)`;
+					player1.style.bottom = margin + "px";
+
+					player3.style.left = "50%";
+					player3.style.transform = `translateX(-50%)`;
+					player3.style.top = margin + "px";
+
+					player2.style.top = "50%";
+					player2.style.transform = "translateY(-50%)";
+					player2.style.left = margin + "px";
+
+					player4.style.top = "50%";
+					player4.style.transform = "translateY(-50%)";
+					player4.style.right = margin + "px";
 				}
 
 				for(let k = 0; k < newAllCards.length; k++){

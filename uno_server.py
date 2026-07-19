@@ -5,6 +5,7 @@ import json
 
 import game as uno
 
+MAX_PLAYERS = 4
 lobbies = {}
 
 class User:
@@ -102,10 +103,10 @@ async def handler(websocket):
                 await websocket.close()
                 print("Connection fault.")
                 return None
-            elif len(lobbies[lobbyid][0].users) == 4:
+            elif len(lobbies[lobbyid][0].users) == MAX_PLAYERS:
                 await websocket.send(json.dumps({
                     "type": "join_failed",
-                    "reason": "Lobby is full (4 members)."
+                    "reason": f"Lobby is full ({MAX_PLAYERS} members)."
                 }))
                 await websocket.close()
                 print("Connection fault.")
@@ -217,7 +218,7 @@ async def handler(websocket):
                         "curplayer": my_lobby.game.curplayer.nickname,
                         "color": my_lobby.game.color,
                         "zeroseven": my_lobby.game.zeroseven,
-                        "stack": my_lobby.game.stackable
+                        "stack": my_lobby.game.stackamt
                     }), raw = True)
                     
                     print("Broadcasted game update")
@@ -243,7 +244,7 @@ async def handler(websocket):
                                 "curplayer": my_lobby.game.curplayer.nickname,
                                 "color": my_lobby.game.color,
                                 "zeroseven": my_lobby.game.zeroseven,
-                                "stack": my_lobby.game.stackable
+                                "stack": my_lobby.game.stackamt
                             }), raw = True)
                 
                 case "draw_card":
@@ -258,7 +259,7 @@ async def handler(websocket):
                         "curplayer": my_lobby.game.curplayer.nickname,
                         "color": my_lobby.game.color,
                         "zeroseven": my_lobby.game.zeroseven,
-                        "stack": my_lobby.game.stackable
+                        "stack": my_lobby.game.stackamt
                     }), raw = True)
     finally:
 
@@ -278,6 +279,13 @@ async def handler(websocket):
                     my_lobby.game.move_next()
 
                 player_hand = my_player.cards
+
+                if my_lobby.game.stackable and my_lobby.game.stacktype:
+                    for u in range(my_lobby.game.stackamt):
+                        my_lobby.game.draw_from_pile(my_player)
+                    my_lobby.game.stacktype = 0
+                    my_lobby.game.stackamt = 0
+                
                 my_lobby.game.drawpile.extend(player_hand)
                 random.shuffle(my_lobby.game.drawpile)
                 my_lobby.game.players.remove(my_player)
@@ -293,7 +301,7 @@ async def handler(websocket):
                     "curplayer": my_lobby.game.curplayer.nickname,
                     "color": my_lobby.game.color,
                     "zeroseven": my_lobby.game.zeroseven,
-                    "stack": my_lobby.game.stackable
+                    "stack": my_lobby.game.stackamt
                 }), raw = True)
 
                 my_lobby.users.remove(my_user)

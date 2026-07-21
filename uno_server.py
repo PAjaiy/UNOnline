@@ -52,16 +52,16 @@ async def handler(websocket):
             if raw:
                 try: 
                     await client.send(message)
-                except websockets.exceptions.ConnectionClosedOK:
-                    pass
+                except websockets.exceptions.ConnectionClosed:
+                    print(f"Not able to send to {user.nickname}.")
             else:
                 try:
                     await client.send(json.dumps({
                         "type": "chat",
                         "message": message
                     }))
-                except websockets.exceptions.ConnectionClosedOK:
-                    pass
+                except websockets.exceptions.ConnectionClosed:
+                    print(f"Not able to send to {user.nickname}.")
 
     async def activebroadcast(message, raw = False):
         for user in my_lobby.activeusers:
@@ -69,23 +69,23 @@ async def handler(websocket):
             if raw:
                 try: 
                     await client.send(message)
-                except websockets.exceptions.ConnectionClosedOK:
-                    pass
+                except websockets.exceptions.ConnectionClosed:
+                    print(f"Not able to send to {user.nickname}.")
             else:
                 try:
                     await client.send(json.dumps({
                         "type": "chat",
                         "message": message
                     }))
-                except websockets.exceptions.ConnectionClosedOK:
-                    pass
+                except websockets.exceptions.ConnectionClosed:
+                    print(f"Not able to send to {user.nickname}.")
 
     addr = websocket.remote_address
 
     try:
         join_message = await websocket.recv()
-    except websockets.exceptions.ConnectionClosedOK:
-        print("The user disconnected.")
+    except websockets.exceptions.ConnectionClosed:
+        print("User disconnected. No more messages can be received.")
         return None
 
     join_data = json.loads(join_message)
@@ -102,7 +102,7 @@ async def handler(websocket):
                     "reason": "Lobby does not exist."
                 }))
                 await websocket.close()
-                print("Connection fault.")
+                print("Connection fault (join_failed sent).")
                 return None
             elif len(lobbies[lobbyid][0].users) == MAX_PLAYERS:
                 await websocket.send(json.dumps({
@@ -110,7 +110,7 @@ async def handler(websocket):
                     "reason": f"Lobby is full ({MAX_PLAYERS} members)."
                 }))
                 await websocket.close()
-                print("Connection fault.")
+                print("Connection fault (join_failed sent).")
                 return None
             elif lobbies[lobbyid][0].game:
                 await websocket.send(json.dumps({
@@ -118,7 +118,7 @@ async def handler(websocket):
                     "reason": "Game is already in progress."
                 }))
                 await websocket.close()
-                print("Connection fault.")
+                print("Connection fault (join_failed sent).")
                 return None
             elif join_data["nickname"] in [user.nickname for user in lobbies[lobbyid][0].users]:
                 await websocket.send(json.dumps({
@@ -126,7 +126,7 @@ async def handler(websocket):
                     "reason": "Nickname already used in lobby; choose a different one."
                 }))
                 await websocket.close()
-                print("Connection fault.")
+                print("Connection fault (join_failed sent).")
                 return None
             else:
                 my_lobby = lobbies[lobbyid][0]
@@ -172,7 +172,7 @@ async def handler(websocket):
                             "type": "join_failed",
                             "reason": "User did not join before game started; this webpage will be shortly refreshed."
                         }))
-                        print("Connection failed.")
+                        print(f"{my_user.nickname} did not join before game started.")
                         return None
                     
                     ingameover[0] = False
@@ -221,8 +221,6 @@ async def handler(websocket):
                         "zeroseven": my_lobby.game.zeroseven,
                         "stack": my_lobby.game.stackamt
                     }), raw = True)
-                    
-                    print("Broadcasted game update")
                 
                 case "chat":
                     mess = data["message"]
@@ -343,9 +341,10 @@ async def handler(websocket):
             }), raw = True)
 
 PORT = int(os.environ.get("PORT", 5555))
+HOST = os.environ.get("HOST", "127.0.0.1")
 
 async def main():
-    async with websockets.serve(handler, "0.0.0.0", PORT):
+    async with websockets.serve(handler, HOST, PORT):
         print(f"Server running on port {PORT}...")
         await asyncio.Future()
 

@@ -27,6 +27,8 @@ let animationId = null;
 let running = false;
 let previous = 0;
 
+let joinFailed = false;
+
 let backgroundOffset = 0;
 const backgroundSpeed = 15;
 
@@ -414,6 +416,7 @@ socket.onmessage = (event) => {
 			socket.close(1000, "Join failed.");
 			socket = null;
 			joinButton.disabled = false;
+			joinFailed = true;
 			alert(data.reason);
 			location.reload();
 			break;
@@ -1003,5 +1006,18 @@ socket.onmessage = (event) => {
 				showGameOver(data.winner);
 				break;
 			}
+	}
+};
+
+socket.onclose = () => {
+	if (joinFailed == false){
+		alert(
+			"Disconnected from the server.\n\n" +
+			"This may happen if:\n" +
+			"• the server restarted\n" +
+			"• your internet disconnected\n" +
+			"• the host shut down the server\n\n" +
+			"Please refresh the page."
+		);
 	}
 };

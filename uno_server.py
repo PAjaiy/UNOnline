@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import random
 import json
+import os
 
 import game as uno
 
@@ -341,9 +342,11 @@ async def handler(websocket):
                 "host": my_lobby.host.nickname
             }), raw = True)
 
+PORT = int(os.environ.get("PORT", 5555))
+
 async def main():
-    async with websockets.serve(handler, "localhost", 5555):
-        print("Server running...")
+    async with websockets.serve(handler, "0.0.0.0", PORT):
+        print(f"Server running on port {PORT}...")
         await asyncio.Future()
 
 asyncio.run(main())

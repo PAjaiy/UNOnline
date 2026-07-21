@@ -31,7 +31,8 @@ let backgroundOffset = 0;
 const backgroundSpeed = 15;
 
 if (!socket){
-	socket = new WebSocket("ws://localhost:5555");
+	const WS_URL = location.hostname === "localhost" ? "ws://localhost:5555" : "wss://mydomain.up.railway.app";
+	socket = new WebSocket(WS_URL);
 }
 
 hideGameContainer();

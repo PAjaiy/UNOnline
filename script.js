@@ -1008,16 +1008,3 @@ socket.onmessage = (event) => {
 			}
 	}
 };
-
-socket.onclose = () => {
-	if (joinFailed == false){
-		alert(
-			"Disconnected from the server.\n\n" +
-			"This may happen if:\n" +
-			"• the server restarted\n" +
-			"• your internet disconnected\n" +
-			"• the host shut down the server\n\n" +
-			"Please refresh the page."
-		);
-	}
-};

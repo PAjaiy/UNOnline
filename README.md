@@ -1,8 +1,8 @@
 UNOnline is a primitive multiplayer implementation of UNO using Python Websockets and HTML/Javascript/CSS.
 
-![Lobby with help popup enabled](images/lobby.png)
+<img src="images/lobby.png">
 
-##Features
+## Features
 
 - Multiplayer lobby system
 - Real-time chat
@@ -10,7 +10,7 @@ UNOnline is a primitive multiplayer implementation of UNO using Python Websocket
 - Optional house rules (7-0 and stacking)
 - Interactive help pages
 
-##How do I run it locally?
+## How do I run it locally?
 
 Clone the repository
 
@@ -39,6 +39,6 @@ Open
 http://localhost:8000
 ```
 
-##Screenshots
-![During an UNO game](images/game.png)
-![Game Over screen](images/gameover.png)
+## Screenshots
+<img src="images/game.png">
+<img src="images/gameover.png">

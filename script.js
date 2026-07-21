@@ -11,6 +11,10 @@ let wait = document.getElementById("waiting-box");
 let table = document.getElementById("table-area");
 
 let nickname, lobby;
+let helpButton;
+let popUpHelp = false;
+let allInfoHolder;
+let curPage = 1;
 
 let startButton;
 let canStart = false;
@@ -99,13 +103,13 @@ function showGameContainer() {
 }
 
 function hideWaitingBox() {
-    if(wait.classList.contains("active")){wait.classList.remove("active");}
-    wait.classList.add("hidden");
+    if(allInfoHolder.classList.contains("active")){allInfoHolder.classList.remove("active");}
+    allInfoHolder.classList.add("hidden");
 }
 
 function showWaitingBox() {
-    if(wait.classList.contains("hidden")){wait.classList.remove("hidden");}
-    wait.classList.add("active");
+    if(allInfoHolder.classList.contains("hidden")){allInfoHolder.classList.remove("hidden");}
+    allInfoHolder.classList.add("active");
 
 	startBackgroundAnimation();
 }
@@ -158,20 +162,45 @@ function positionPlayers() {
 		const player4 = players[3];
 
 		player1.style.left = "50%";
-		player1.style.transform = `translateX(-50%)`;
 		player1.style.bottom = margin + "px";
 
 		player3.style.left = "50%";
-		player3.style.transform = `translateX(-50%)`;
 		player3.style.top = margin + "px";
 
 		player2.style.top = "50%";
-		player2.style.transform = "translateY(-50%)";
 		player2.style.left = margin + "px";
 
 		player4.style.top = "50%";
-		player4.style.transform = "translateY(-50%)";
 		player4.style.right = margin + "px";
+	}
+	else if(players.length == 5){
+		const player1 = players[0];
+		const player2 = players[1];
+		const player3 = players[2];
+		const player4 = players[3];
+		const player5 = players[4];
+
+		player1.style.left = "50%";
+		player1.style.bottom = margin + "px";
+
+		player2.style.top = "50%";
+		player2.style.left = margin + "px";
+
+		const gap = 20;
+
+		const w1 = player3.offsetWidth;
+		const w2 = player4.offsetWidth;
+
+		const total = w1 + gap + w2;
+
+		player3.style.top = margin + "px";
+		player4.style.top = margin + "px";
+
+		player3.style.left = `calc(50% - ${total/2}px)`;
+		player4.style.left = `calc(50% + ${total/2-w2}px)`;
+
+		player5.style.top = "50%";
+		player5.style.right = margin + "px";
 	}
 
     pile.style.left = width/2 + "px";
@@ -238,6 +267,74 @@ function showGameOver(winner) {
     };
 }
 
+function addHelpSection(text, imageSrc){
+	const helpSec = document.createElement("div");
+	helpSec.classList.add("help-section");
+
+	const p = document.createElement("div");
+	p.innerHTML = text;
+	p.classList.add("help-para");
+
+	const img = document.createElement("img");
+	img.src = imageSrc;
+	img.classList.add("help-image");
+
+	const helpBody = document.getElementById("help-body");
+	helpSec.append(p, img);
+
+	helpBody.appendChild(helpSec);
+}
+
+function refreshPopup(){
+	const helpBody = document.getElementById("help-body");
+	helpBody.innerHTML = "";
+
+	if (curPage == 1)
+	{
+		addHelpSection("Be the <b>first</b> player to get rid of all your cards.<br>Try to match the top discard card by <b>color, number, or symbol</b> during your turn.<br>If you cannot, draw one card.", 
+			"assets/help/basic_controls.png");
+
+		const imageHolder1 = document.createElement("div");
+		imageHolder1.classList.add("image-holder");
+
+		const image1 = document.createElement("img");
+		image1.src = "assets/help/valid_cards.png";
+		image1.classList.add("normal-help-image");
+
+		imageHolder1.appendChild(image1);
+		helpBody.appendChild(imageHolder1);
+	}
+	else if (curPage == 2)
+	{
+		addHelpSection("<b>Skip cards</b> skips the next player's turn.<br><b>Reverse cards</b> reverses the current direction of playing, and is a skip card with 2 players.<br><b>Draw Two cards</b> makes the next player draw two cards and skip their turn.<b>*</b>", 
+			"assets/help/special_cards_1.png");
+
+		addHelpSection("<b>Wild cards</b> lets the player playing it choose the next color to be played.<br><b>Wild Draw Four cards</b> act as both wild cards and \"Draw Four\" cards.<b>*</b>",
+			"assets/help/special_cards_2.png");
+	}
+	else {
+		const holder = document.createElement("div");
+		holder.classList.add("last-holder");
+
+		const text1 = document.createElement("div");
+		const text2 = document.createElement("div");
+
+		text1.classList.add("help-text");
+		text2.classList.add("help-text");
+
+		text1.innerHTML = "<b>*Stacking:</b> When this mode is enabled, a player playing a Draw Two or a Wild Draw Four card can let the next player 'stack' the card penalty with the same type of card (Draw Twos only stack on other Draw Twos, for example). The last person unable to play the same card will click on the draw pile to <b>take the penalty of all stacked cards.</b>";
+		text2.innerHTML = "<b>**7-0 rule:</b> According to this rule, when a player plays a card with a number 7 on it, they can swap their hand with the person they choose. If they play a card with the number 0 on it, each player will pass on their hand to the player next to them in the current playing direction.";
+
+		holder.append(text1, text2);
+		helpBody.append(holder);
+	}
+
+	const headerNavig = document.getElementById("header-navig");
+	const num = headerNavig.querySelector("div");
+
+	num.textContent = curPage + "/3";
+}
+
 // event listeners
 joinButton.addEventListener("click", () => {
     nickname = document.getElementById("nickname-input").value.trim();
@@ -283,7 +380,32 @@ socket.onmessage = (event) => {
             showGameContainer();
 
             const top = document.getElementById('top-player');
-			top.textContent = "Lobby code: " + data["lobby"];
+			top.innerHTML = "";
+
+			const text = document.createElement("span");
+			text.textContent = "Lobby code: " + data["lobby"];
+
+			helpButton = document.createElement("button");
+			helpButton.disabled = false;
+			helpButton.id = "help-button";
+			helpButton.textContent = "?";
+			
+			top.appendChild(text);
+			top.appendChild(helpButton);
+
+			helpButton.addEventListener("click", () => {
+				const helpPopup = document.getElementById("help-popup");
+				if (popUpHelp == false){
+					popUpHelp = true;
+					helpPopup.classList.remove("hidden");
+					helpButton.textContent = "x";
+				}
+				else{
+					popUpHelp = false;
+					helpPopup.classList.add("hidden");
+					helpButton.textContent = "?";
+				}
+			})
 
 			break;
 		
@@ -301,6 +423,12 @@ socket.onmessage = (event) => {
 
 		case "waiting_update":
 			gamePlaying = false;
+		
+			helpButton = document.getElementById("help-button");
+			helpButton.disabled = false;
+
+			allInfoHolder = document.createElement("div");
+			allInfoHolder.id = "all-info-holder";
 
 			table.innerHTML = "";
 			table.style.backgroundColor = "rgba(17, 17, 17, 0.9)";
@@ -327,7 +455,9 @@ socket.onmessage = (event) => {
 
 			table.appendChild(allCardSets);
 
-			table.appendChild(wait);
+			table.appendChild(allInfoHolder);
+			allInfoHolder.appendChild(wait);
+
 			wait.innerHTML = "";
             showWaitingBox();
 
@@ -429,7 +559,7 @@ socket.onmessage = (event) => {
 
 				let startButton = document.createElement("button");
 				startButton.id = "start-button";
-				startButton.innerHTML = "<b>Start Game</b>";
+				startButton.innerHTML = canStart ? "<b>Play!</b>" : "<b>Waiting for players...</b>";
 				startButton.classList.add("start-button");
 
 				wait.appendChild(startButton);
@@ -450,9 +580,67 @@ socket.onmessage = (event) => {
 				descBoxes.appendChild(hostDisplay);
 			}
 
+			const popup = document.createElement("div");
+			popup.id = "help-popup";
+
+			const header = document.createElement("div");
+			header.id = "help-header";
+
+			const headerTitle = document.createElement("div");
+			headerTitle.id = "header-title";
+			headerTitle.textContent = ""
+
+			const headerNavig = document.createElement("div");
+			headerNavig.id = "header-navig";
+
+			const prevButton = document.createElement("button");
+			const nextButton = document.createElement("button");
+			const pageNum = document.createElement("div");
+
+			prevButton.textContent = "<";
+			nextButton.textContent = ">";
+
+			prevButton.addEventListener("click", () => {
+				curPage = curPage == 1 ? 3 : curPage-1;
+				refreshPopup();
+			})
+			nextButton.addEventListener("click", () => {
+				curPage = curPage == 3 ? 1 : curPage+1;
+				refreshPopup();
+			})
+			
+			prevButton.classList.add("navig-button");
+			nextButton.classList.add("navig-button");
+
+			pageNum.textContent = curPage + "/3";
+
+			headerNavig.appendChild(prevButton);
+			headerNavig.appendChild(pageNum);
+			headerNavig.appendChild(nextButton);
+
+			header.appendChild(headerTitle);
+			header.appendChild(headerNavig);
+
+			const body = document.createElement("div");
+			body.id = "help-body";
+
+			popup.appendChild(header);
+			popup.appendChild(body);
+			allInfoHolder.appendChild(popup);
+
+			refreshPopup();
+
+			if (popUpHelp == false && popup.classList.contains("hidden") == false){popup.classList.add("hidden");}
+
 			break;
 		
 		case "start_game":
+			popUpHelp = false;
+			helpButton = document.getElementById("help-button");
+			helpButton.textContent = "?";
+			helpButton.disabled = true;
+			curPage = 1;
+
 			if(data.players.includes(nickname))
 			{
 				gamePlaying = true;
@@ -631,6 +819,38 @@ socket.onmessage = (event) => {
 					player4.style.top = "50%";
 					player4.style.transform = "translateY(-50%)";
 					player4.style.right = margin + "px";
+				}
+				else if (numPlayers == 5){
+					const player1 = players[0];
+					const player2 = players[1];
+					const player3 = players[2];
+					const player4 = players[3];
+					const player5 = players[4];
+
+					player1.style.left = "50%";
+					player1.style.transform = `translateX(-50%)`;
+					player1.style.bottom = margin + "px";
+
+					player2.style.top = "50%";
+					player2.style.transform = "translateY(-50%)";
+					player2.style.left = margin + "px";
+
+					const gap = 20;
+
+					const w1 = player3.offsetWidth;
+					const w2 = player4.offsetWidth;
+
+					const total = w1 + gap + w2;
+
+					player3.style.top = margin + "px";
+					player4.style.top = margin + "px";
+
+					player3.style.left = `calc(50% - ${total/2}px)`;
+					player4.style.left = `calc(50% + ${total/2-w2}px)`;
+
+					player5.style.top = "50%";
+					player5.style.transform = "translateY(-50%)";
+					player5.style.right = margin + "px";
 				}
 
 				for(let k = 0; k < newAllCards.length; k++){

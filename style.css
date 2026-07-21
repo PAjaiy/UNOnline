@@ -7,12 +7,20 @@ body{
     height: 100vh;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 button,
 input,
 textarea,
 select {
     font: inherit;
     font-weight: 400;
+}
+
+.hidden {
+    display: none;
 }
 
 /* chat box css */
@@ -231,9 +239,35 @@ select {
 /* top-player css */
 #top-player {
     grid-area: top;
-    display: flex;
+    display: grid;
+    grid-template-columns: 30px 1fr 30px;
     justify-content: center;
     align-items: center;
+}
+
+#top-player span {
+    grid-column: 2;
+    justify-self: center;
+}
+
+#help-button {
+    grid-column: 3;
+    justify-self: end;
+    margin-right: 12px;
+
+    width: 25px;
+    height: 25px;
+
+    border: 1px solid white;
+    border-radius: 50%;
+
+    background: transparent;
+    color: white;
+    cursor: pointer;
+}
+
+#help-button:disabled {
+    cursor: default;
 }
 
 /* background animation css */
@@ -305,12 +339,34 @@ select {
 }
 
 /* waiting-box css */
-#waiting-box {
+#all-info-holder {
     position: absolute;
     top: 50%;
     left: 50%;
 
     transform: translate(-50%, -50%);
+    width: 700px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+
+    opacity: 1;
+    transition: opacity 0.25s ease;
+}
+
+#all-info-holder.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#all-info-holder.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#waiting-box {
     width: 500px;
 
     display: flex;
@@ -319,19 +375,6 @@ select {
     gap: 10px;
 
     padding: 24px;
-
-    opacity: 1;
-    transition: opacity 0.25s ease;
-}
-
-#waiting-box.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-#waiting-box.hidden {
-    opacity: 0;
-    pointer-events: none;
 }
 
 .lobby-row {
@@ -459,12 +502,148 @@ select {
     background: rgb(27, 27, 27);
 }
 
+@keyframes startPulse {
+    0%, 100% {
+        filter: brightness(1);
+    }
+
+    50% {
+        filter: brightness(1.5);
+    }
+}
+
+.start-button:not(:disabled) {
+    animation: startPulse 1s ease-in-out infinite;
+}
+
+.start-button:disabled {
+    pointer-events: none;
+}
+
 .copy-button:hover {
     background: rgb(70, 70, 70);
 }
 
 .copy-button:active {
     background: rgb(40, 40, 40);
+}
+
+/* help box css */
+
+#help-popup {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background: rgb(37, 37, 37);
+    border-radius: 5px;
+    margin: 10px 0 0 0;
+    padding: 0 0 10px 0;
+}
+
+#help-header {
+    display: grid;
+    grid-template-columns: 120px 1fr 120px;
+    width: 100%;
+    height: 40px;
+}
+
+#header-title {
+    display: flex;
+    grid-column: 2;
+    justify-content: center;
+    align-items: center;
+}
+
+.navig-button {
+    border: 1px solid grey;
+    background-color: rgb(37, 37, 37);
+    color: white;
+    margin: 0 5px;
+}
+
+.navig-button:hover {
+    background: rgb(70, 70, 70);
+}
+
+.navig-button:active {
+    background: rgb(40, 40, 40);
+}
+
+#header-navig {
+    width: 100%;
+    grid-column: 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#help-body {
+    display: flex;
+    flex-direction: column;
+    width: 97%;
+    height: 330px;
+    border-radius: 5px;
+    background-color: rgb(50, 50, 50);
+
+    overflow: hidden;
+}
+
+.help-section {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    grid-template-areas: "para image";
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 10px 0 20px;
+}
+
+.help-text {
+    width: 100%;
+    padding: 10px 20px 10px 20px;
+
+    text-align: left;
+    line-height: 1.45;
+}
+
+.image-holder {
+    width: 100%;
+    padding: 20px;
+}
+
+.normal-help-image {
+    width: 100%;
+    height: auto;
+}
+
+.help-image {
+    width: 100%;
+    height: auto;
+    grid-area: image;
+}
+
+.help-para {
+    grid-area: para;
+    width: 100%;
+    font-size: 9px;
+    text-align: left;
+    padding: 0 10px 0 0;
+}
+
+#help-popup.hidden {
+    display: none;
+}
+
+.last-holder {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
 }
 
 /* piles css */

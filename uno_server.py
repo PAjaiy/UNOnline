@@ -5,7 +5,7 @@ import json
 
 import game as uno
 
-MAX_PLAYERS = 4
+MAX_PLAYERS = 5
 lobbies = {}
 
 class User:

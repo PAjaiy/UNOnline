@@ -32,7 +32,10 @@ class Game:
         self.stacktype = 0
 
         self.drawpile = []
+        
         self.create_drawpile()
+        self.create_drawpile()
+
         while self.drawpile[-1-len(players)*7].special != "Number":
             self.drawpile = []
             self.create_drawpile()

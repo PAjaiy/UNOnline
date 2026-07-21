@@ -31,7 +31,7 @@ let backgroundOffset = 0;
 const backgroundSpeed = 15;
 
 if (!socket){
-	const WS_URL = location.hostname === "localhost" ? "ws://localhost:5555" : "wss://mydomain.up.railway.app";
+	const WS_URL = location.hostname === "localhost" ? "ws://localhost:5555" : "wss://unonline-production.up.railway.app";
 	socket = new WebSocket(WS_URL);
 }
 

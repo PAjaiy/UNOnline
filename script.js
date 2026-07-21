@@ -32,10 +32,19 @@ let joinFailed = false;
 let backgroundOffset = 0;
 const backgroundSpeed = 15;
 
+let localHosting = location.hostname === "localhost" ? true : false;
+
 if (!socket){
-	const WS_URL = location.hostname === "localhost" ? "ws://localhost:5555" : "wss://unonline-production.up.railway.app";
+	const WS_URL = localHosting ? "ws://localhost:5555" : "wss://unonline-production.up.railway.app";
 	socket = new WebSocket(WS_URL);
 }
+
+let myLink = localHosting ? "http://localhost:8000/" : "https://pajaiy.github.io/UNOnline/";
+
+const params = new URLSearchParams(window.location.search);
+const lobbyCode = params.get("join");
+
+if (lobbyCode){document.getElementById("lobby-input").value = lobbyCode;}
 
 hideGameContainer();
 
@@ -401,7 +410,7 @@ socket.onmessage = (event) => {
 				if (popUpHelp == false){
 					popUpHelp = true;
 					helpPopup.classList.remove("hidden");
-					helpButton.textContent = "x";
+					helpButton.innerHTML = '    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"> <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.25l13.5 13.5M18.75 5.25L5.25 18.75"/> </svg>';
 				}
 				else{
 					popUpHelp = false;
@@ -476,9 +485,9 @@ socket.onmessage = (event) => {
 			copyButton.classList.add("copy-button");
 
 			copyButton.addEventListener("click", () => {
-				navigator.clipboard.writeText(data["lobby"]);
+				navigator.clipboard.writeText(myLink + "?join=" + data["lobby"]);
 
-				copyButton.textContent = "Copied!";
+				copyButton.textContent = "Copied link!";
 				setTimeout(() => {
 					copyButton.textContent = "⧉";
 				}, 1000);

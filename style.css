@@ -5,6 +5,10 @@ body{
     background: #111111;
     color: white;
     height: 100vh;
+    min-width: 1200px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 * {
@@ -253,10 +257,14 @@ select {
 #help-button {
     grid-column: 3;
     justify-self: end;
-    margin-right: 12px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     width: 25px;
     height: 25px;
+    padding: 0;
 
     border: 1px solid white;
     border-radius: 50%;
@@ -264,6 +272,12 @@ select {
     background: transparent;
     color: white;
     cursor: pointer;
+}
+
+#help-button svg {
+    display: block;
+    width: 18px;
+    height: 18px;
 }
 
 #help-button:disabled {
@@ -345,7 +359,7 @@ select {
     left: 50%;
 
     transform: translate(-50%, -50%);
-    width: 700px;
+    width: min(80.65%, 700px);
 
     display: flex;
     flex-direction: column;
@@ -354,6 +368,8 @@ select {
 
     opacity: 1;
     transition: opacity 0.25s ease;
+
+    max-height: calc(100vh - 130px);
 }
 
 #all-info-holder.active {
@@ -367,7 +383,7 @@ select {
 }
 
 #waiting-box {
-    width: 500px;
+    width: 71.43%;
 
     display: flex;
     flex-direction: column;
@@ -535,9 +551,12 @@ select {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
     width: 100%;
+
     background: rgb(37, 37, 37);
     border-radius: 5px;
+
     margin: 10px 0 0 0;
     padding: 0 0 10px 0;
 }
@@ -583,11 +602,12 @@ select {
     display: flex;
     flex-direction: column;
     width: 97%;
-    height: 330px;
+    height: min(330px, 39vh);
     border-radius: 5px;
     background-color: rgb(50, 50, 50);
 
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .help-section {
@@ -611,7 +631,7 @@ select {
 
 .image-holder {
     width: 100%;
-    padding: 20px;
+    padding: 20px 20px 10px 20px;
 }
 
 .normal-help-image {

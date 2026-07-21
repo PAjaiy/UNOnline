@@ -161,7 +161,7 @@ async def handler(websocket):
     }), raw = True)
     
     try:
-        print("user loop started")
+        print("User loop started.")
         async for message in websocket:
             data = json.loads(message)
             
@@ -343,7 +343,7 @@ async def handler(websocket):
 PORT = int(os.environ.get("PORT", 5555))
 
 async def main():
-    async with websockets.serve(handler, "0.0.0.0", PORT):
+    async with websockets.serve(handler, "127.0.0.1", PORT):
         print(f"Server running on port {PORT}...")
         await asyncio.Future()
 

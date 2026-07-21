@@ -519,7 +519,7 @@ socket.onmessage = (event) => {
 			playerDisplay.appendChild(playerSec);
 
 			const div1 = document.createElement("div");
-			div1.innerHTML = "<b>" + String(data.users.length) + "/4 players joined.</b>";
+			div1.innerHTML = "<b>" + String(data.users.length) + "/5 players joined.</b>";
 			if(data.users.length < 2) {div1.style.color = "red"; canStart = false;}
 			else {canStart = true;}
 			playerDisplay.appendChild(div1);

@@ -10,34 +10,8 @@ UNOnline is a primitive multiplayer implementation of UNO using Python Websocket
 - Optional house rules (7-0 and stacking)
 - Interactive help pages
 
-## How do I run it locally?
-
-Clone the repository
-
-```bash
-git clone https://github.com/PAjaiy/UNOnline.git
-```
-
-Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-Run the server
-```bash
-python server.py
-```
-
-Serve the frontend
-```bash
-python -m http.server 8000
-```
-
-Open
-```
-http://localhost:8000
-```
+## Try it out live here:
+https://pajaiy.github.io/UNOnline
 
 ## Screenshots
 <img src="images/game.png">
